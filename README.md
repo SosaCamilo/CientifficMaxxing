@@ -32,11 +32,3 @@ mvn compile exec:java -pl cliente
 
 
 La contraseña de administrador por defecto es `admin1234`.
-
-## Estructura
-
-
-CientifficMaxxing/
-├── servidor/   ← lógica de negocio, manejo de archivos, concurrencia
-├── cliente/    ← interfaz gráfica Swing
-└── resources/  ← archivos CSV con los datos
