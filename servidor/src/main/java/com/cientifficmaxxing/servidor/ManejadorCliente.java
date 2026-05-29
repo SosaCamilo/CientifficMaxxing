@@ -1,7 +1,7 @@
 package com.cientifficmaxxing.servidor;
 
 import com.cientifficmaxxing.servidor.dao.CientifficDAO;
-import com.cientifficmaxxing.servidor.db.ConexionDB;
+//import com.cientifficmaxxing.servidor.db.ConexionDB;
 import com.cientifficmaxxing.servidor.protocolo.ManejadorPeticiones;
 import com.cientifficmaxxing.servidor.util.Logs;
 
@@ -49,7 +49,9 @@ public class ManejadorCliente extends Thread {
                 new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
             BufferedReader entrada = new BufferedReader(
                 new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-
+            
+            
+            /*
             // Una conexión JDBC por cliente — si falla, se avisa y se cierra la sesión
             try (Connection conexion = ConexionDB.obtener()) {
                 CientifficDAO dao = new CientifficDAO(conexion);
@@ -59,7 +61,7 @@ public class ManejadorCliente extends Thread {
                 // La BD no está disponible: informar al cliente y cerrar la sesión
                 Logs.error("[" + ip + "] No se pudo conectar a la BD: " + e.getMessage(), e);
                 salida.println("ERROR:BASE_DE_DATOS_NO_DISPONIBLE");
-            }
+            }*/
 
         } catch (IOException e) {
             // Error leyendo/escribiendo en el socket (cliente desconectado abruptamente, etc.)

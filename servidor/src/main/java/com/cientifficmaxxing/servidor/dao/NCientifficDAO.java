@@ -345,12 +345,11 @@ public class NCientifficDAO {
     }
     
     public List<String[]> listarResultadosPorExperimento(int id){
+        
         List<String[]> resultadoExp   = new ArrayList<>();
-        int check = -1;
         for (String[] fila : resultado){
             if (Integer.parseInt(fila[4]) == id && fila[4].equals(String.valueOf(id))){
                 resultadoExp.add(fila);
-                check=1;
             }
         }
         return resultadoExp;
