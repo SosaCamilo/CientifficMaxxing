@@ -494,3 +494,50 @@
 [2026-05-29 18:35:30] [INFO   ] [127.0.0.1] >> LISTAR_CIENTIFICOS
 [2026-05-29 18:35:30] [INFO   ] [127.0.0.1] << DATOS|4|9|1|Lautaro|Pawlowicz|1995-03-14|2|Camilo|Sosa|1998-07-22|3|Gael|Lapeyre|2000-11-05|4|Lucas|Caballer|1997-04-18|5|Ilya|Ferenz|1999-09-30|6|Bruno|Palomeque|2001-02-11|7|Miguel|Ortiz|1996-06-25|8|Benicio|Analiz|2002-08-08|9|Clavicular|Tonete|1994-12-01|10|Lautaro|Geli|2000-05-17
 [2026-05-29 18:35:35] [INFO   ] [127.0.0.1] Cliente desconectado
+[2026-06-03 21:39:17] [INFO   ] === CientifficMaxxing Servidor ===
+[2026-06-03 21:39:18] [INFO   ] Iniciando en puerto 9000...
+[2026-06-03 21:39:18] [INFO   ] Servidor listo. Esperando clientes...
+[2026-06-03 21:39:26] [INFO   ] Conexión entrante desde: 127.0.0.1
+[2026-06-03 21:39:26] [INFO   ] [127.0.0.1] Cliente conectado
+[2026-06-03 21:39:26] [INFO   ] [127.0.0.1] Cliente desconectado
+[2026-06-03 21:40:13] [INFO   ] Conexión entrante desde: 127.0.0.1
+[2026-06-03 21:40:13] [INFO   ] [127.0.0.1] Cliente conectado
+[2026-06-03 21:40:13] [INFO   ] [127.0.0.1] Cliente desconectado
+[2026-06-03 21:40:41] [INFO   ] === CientifficMaxxing Servidor ===
+[2026-06-03 21:40:41] [INFO   ] Iniciando en puerto 9000...
+[2026-06-03 21:40:41] [INFO   ] Servidor listo. Esperando clientes...
+[2026-06-03 21:41:11] [INFO   ] Conexión entrante desde: 127.0.0.1
+[2026-06-03 21:41:11] [INFO   ] [127.0.0.1] Cliente conectado
+[2026-06-03 21:41:11] [INFO   ] [127.0.0.1] Cliente desconectado
+[2026-06-03 21:43:00] [INFO   ] Conexión entrante desde: 127.0.0.1
+[2026-06-03 21:43:00] [INFO   ] [127.0.0.1] Cliente conectado
+[2026-06-03 21:43:00] [INFO   ] [127.0.0.1] Cliente desconectado
+[2026-06-03 21:43:23] [INFO   ] Conexión entrante desde: 127.0.0.1
+[2026-06-03 21:43:23] [INFO   ] [127.0.0.1] Cliente conectado
+[2026-06-03 21:43:23] [INFO   ] [127.0.0.1] Cliente desconectado
+[2026-06-03 21:49:12] [INFO   ] === CientifficMaxxing Servidor ===
+[2026-06-03 21:49:12] [INFO   ] Iniciando en puerto 9000...
+[2026-06-03 21:49:12] [INFO   ] Servidor listo. Esperando clientes...
+[2026-06-03 21:49:20] [INFO   ] Conexión entrante desde: 127.0.0.1
+[2026-06-03 21:49:20] [INFO   ] [127.0.0.1] Cliente conectado
+[2026-06-03 21:49:24] [INFO   ] [127.0.0.1] >> LISTAR_EXPERIMENTOS
+[2026-06-03 21:49:24] [INFO   ] [127.0.0.1] << DATOS|7|7|1|2026-01-10|2026-06-30|Peptides on Rats|Estudio del efecto de péptidos sintéticos sobre el metabolismo y comportamiento en ratas de laboratorio.|En Proceso|1|2|2026-02-01|2026-05-31|Sleep Quality on ASU FRAT|Análisis de la calidad del sueño en estudiantes universitarios de fraternidades bajo distintas condiciones de descanso.|En Proceso|2|3|2026-03-15|2026-09-15|Androgenic sleep behaviour|Investigación sobre el comportamiento del cabello bajo influencia de andrógenos en distintos grupos etarios.|Sin comenzar|4|4|2001-01-01|2002-01-02|Prueba 3|Este experimento es una prueba de registro modificado.|Sin comenzar|1|5|2003-03-03|2005-03-03|Prueba 4|Este registro es una prueba para checkear si se carga bien todo|Sin comenzar|7|6|2002-02-02|2003-02-02|Prueba Caballos|Test de carga de datos con caballos|Sin comenzar|9|7|2003-03-03|2004-03-03|Prueba Ranas|Test de carga de datos con ranas|Sin comenzar|1|8|1995-01-01|1996-01-01|Experimentos con humanos|Probando la resistencia de humanos a golpes|Sin comenzar|1
+[2026-06-03 22:04:03] [INFO   ] === CientifficMaxxing Servidor ===
+[2026-06-03 22:04:03] [INFO   ] Iniciando en puerto 9000...
+[2026-06-03 22:04:03] [INFO   ] Servidor listo. Esperando clientes...
+[2026-06-03 22:04:09] [INFO   ] Conexión entrante desde: 127.0.0.1
+[2026-06-03 22:04:09] [INFO   ] [127.0.0.1] Cliente conectado
+[2026-06-03 22:04:13] [INFO   ] [127.0.0.1] >> LISTAR_EXPERIMENTOS
+[2026-06-03 22:04:13] [INFO   ] [127.0.0.1] << DATOS|7|8|IdExperimento|FechaInicio|FechaFinal|Nombre|Descripcion|Estado|IdResponsable|1|2026-01-10|2026-06-30|Peptides on Rats|Estudio del efecto de péptidos sintéticos sobre el metabolismo y comportamiento en ratas de laboratorio.|En Proceso|1|2|2026-02-01|2026-05-31|Sleep Quality on ASU FRAT|Análisis de la calidad del sueño en estudiantes universitarios de fraternidades bajo distintas condiciones de descanso.|En Proceso|2|3|2026-03-15|2026-09-15|Androgenic sleep behaviour|Investigación sobre el comportamiento del cabello bajo influencia de andrógenos en distintos grupos etarios.|Sin comenzar|4|4|2001-01-01|2002-01-02|Prueba 3|Este experimento es una prueba de registro modificado.|Sin comenzar|1|5|2003-03-03|2005-03-03|Prueba 4|Este registro es una prueba para checkear si se carga bien todo|Sin comenzar|7|6|2002-02-02|2003-02-02|Prueba Caballos|Test de carga de datos con caballos|Sin comenzar|9|7|2003-03-03|2004-03-03|Prueba Ranas|Test de carga de datos con ranas|Sin comenzar|1|8|1995-01-01|1996-01-01|Experimentos con humanos|Probando la resistencia de humanos a golpes|Sin comenzar|1
+[2026-06-03 22:17:03] [INFO   ] === CientifficMaxxing Servidor ===
+[2026-06-03 22:17:03] [INFO   ] Iniciando en puerto 9000...
+[2026-06-03 22:17:03] [INFO   ] Servidor listo. Esperando clientes...
+[2026-06-03 22:17:11] [INFO   ] Conexión entrante desde: 127.0.0.1
+[2026-06-03 22:17:11] [INFO   ] [127.0.0.1] Cliente conectado
+[2026-06-03 22:17:15] [INFO   ] [127.0.0.1] >> LISTAR_EXPERIMENTOS
+[2026-06-03 22:17:15] [INFO   ] [127.0.0.1] << DATOS|9|8|IdExperimento|Nombre|Descripcion|FechaInicio|FechaFinal|Estado|Responsable|IdResponsable|Equipo|1|Peptides on Rats|Estudio del efecto de péptidos sintéticos sobre el metabolismo y comportamiento en ratas de laboratorio.|2026-01-10|2026-06-30|En Proceso|Lautaro Pawlowicz|1|Lautaro Pawlowicz, Camilo Sosa, Gael Lapeyre, Lucas Caballer, Ilya Ferenz, Bruno Palomeque, Miguel Ortiz|2|Sleep Quality on ASU FRAT|Análisis de la calidad del sueño en estudiantes universitarios de fraternidades bajo distintas condiciones de descanso.|2026-02-01|2026-05-31|En Proceso|Camilo Sosa|2|Camilo Sosa, Bruno Palomeque, Miguel Ortiz|3|Androgenic sleep behaviour|Investigación sobre el comportamiento del cabello bajo influencia de andrógenos en distintos grupos etarios.|2026-03-15|2026-09-15|Sin comenzar|Lucas Caballer|4|Lucas Caballer, Benicio Analiz, Camilo Sosa|4|Prueba 3|Este experimento es una prueba de registro modificado.|2001-01-01|2002-01-02|Sin comenzar|Lautaro Pawlowicz|1|Lautaro Pawlowicz|5|Prueba 4|Este registro es una prueba para checkear si se carga bien todo|2003-03-03|2005-03-03|Sin comenzar|Miguel Ortiz|7|Benicio Analiz, Miguel Ortiz|6|Prueba Caballos|Test de carga de datos con caballos|2002-02-02|2003-02-02|Sin comenzar|Clavicular Tonete|9|Clavicular Tonete|7|Prueba Ranas|Test de carga de datos con ranas|2003-03-03|2004-03-03|Sin comenzar|Lautaro Pawlowicz|1|Lautaro Pawlowicz|8|Experimentos con humanos|Probando la resistencia de humanos a golpes|1995-01-01|1996-01-01|Sin comenzar|Lautaro Pawlowicz|1|Lautaro Pawlowicz
+[2026-06-03 22:17:31] [INFO   ] [127.0.0.1] >> LISTAR_RESULTADOS|1
+[2026-06-03 22:17:31] [INFO   ] [127.0.0.1] << DATOS|6|1|1|2026-02-15|Los péptidos mostraron reducción del 12% en glucosa en sangre tras 4 semanas.|Reducción glucémica moderada observada en grupo experimental.|1|2|2|2026-03-20|Se registró aumento de cortisol en ratas sometidas a dosis altas.|Respuesta de estrés elevada en dosis alta.|1|4
+[2026-06-03 22:17:37] [INFO   ] [127.0.0.1] >> LISTAR_CIENTIFICOS
+[2026-06-03 22:17:37] [INFO   ] [127.0.0.1] << DATOS|4|9|1|Lautaro|Pawlowicz|1995-03-14|2|Camilo|Sosa|1998-07-22|3|Gael|Lapeyre|2000-11-05|4|Lucas|Caballer|1997-04-18|5|Ilya|Ferenz|1999-09-30|6|Bruno|Palomeque|2001-02-11|7|Miguel|Ortiz|1996-06-25|8|Benicio|Analiz|2002-08-08|9|Clavicular|Tonete|1994-12-01|10|Lautaro|Geli|2000-05-17
+[2026-06-03 22:17:49] [INFO   ] [127.0.0.1] Cliente desconectado

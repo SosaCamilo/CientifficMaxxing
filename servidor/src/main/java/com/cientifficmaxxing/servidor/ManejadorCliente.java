@@ -1,6 +1,6 @@
 package com.cientifficmaxxing.servidor;
 
-import com.cientifficmaxxing.servidor.dao.CientifficDAO;
+import com.cientifficmaxxing.servidor.dao.NCientifficDAO;
 //import com.cientifficmaxxing.servidor.db.ConexionDB;
 import com.cientifficmaxxing.servidor.protocolo.ManejadorPeticiones;
 import com.cientifficmaxxing.servidor.util.Logs;
@@ -8,8 +8,9 @@ import com.cientifficmaxxing.servidor.util.Logs;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+/*
 import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.SQLException;*/
 
 /**
  * Atiende a un cliente conectado durante toda su sesión.
@@ -50,6 +51,8 @@ public class ManejadorCliente extends Thread {
             BufferedReader entrada = new BufferedReader(
                 new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
             
+            //NCientifficDAO dao = new NCientifficDAO();
+            procesarMensajes(entrada, salida/*, dao*/, ip);
             
             /*
             // Una conexión JDBC por cliente — si falla, se avisa y se cierra la sesión
@@ -86,8 +89,8 @@ public class ManejadorCliente extends Thread {
      *
      * readLine() devuelve null cuando el cliente cierra la conexión (EOF en el socket).
      */
-    private void procesarMensajes(BufferedReader entrada, PrintWriter salida,
-                                   CientifficDAO dao, String ip) throws IOException {
+    private void procesarMensajes(BufferedReader entrada, PrintWriter salida/*,
+                                   NCientifficDAO dao*/, String ip) throws IOException {
         ManejadorPeticiones handler = new ManejadorPeticiones(/*dao*/);
         String linea;
         while ((linea = entrada.readLine()) != null) {

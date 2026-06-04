@@ -335,9 +335,50 @@ public class NCientifficDAO {
         }
         return 1;
     }
-    
+    /*
     public List<String[]> listarExperimentos (){
         return experimento;
+    }*/
+    
+    public static List<String[]> listarExperimentos() {
+        List<String[]> lista = new ArrayList<>();
+        lista.add(new String[]{"IdExperimento", "Nombre", "Descripcion", "FechaInicio", 
+                               "FechaFinal", "Estado", "Responsable", "IdResponsable", "Equipo"});
+
+        for (String[] exp : experimento) {
+            // exp: [0]=Id [1]=FechaInicio [2]=FechaFinal [3]=Nombre [4]=Desc [5]=Estado [6]=IdResp
+
+            // buscar nombre del responsable en cientifico
+            String idResp = exp[6];
+            String nombreResp = "";
+            String[] cien = mapaCientifico.get(idResp);
+            if (cien != null) nombreResp = cien[1] + " " + cien[2]; // Nombre + Apellido
+
+            // buscar equipo en realiza
+            StringBuilder equipo = new StringBuilder();
+            for (String[] r : realiza) {
+                if (r[1].equals(exp[0])) { // r[1]=IdExperimento
+                    String[] c = mapaCientifico.get(r[0]); // r[0]=IdCientifico
+                    if (c != null) {
+                        if (equipo.length() > 0) equipo.append(", ");
+                        equipo.append(c[1]).append(" ").append(c[2]);
+                    }
+                }
+            }
+
+            lista.add(new String[]{
+                exp[0],          // IdExperimento
+                exp[3],          // Nombre
+                exp[4],          // Descripcion
+                exp[1],          // FechaInicio
+                exp[2],          // FechaFinal
+                exp[5],          // Estado
+                nombreResp,      // Responsable (texto)
+                idResp,          // IdResponsable
+                equipo.toString() // Equipo
+            });
+        }
+        return lista;
     }
     
     public List<String[]> listarCientificos (){
