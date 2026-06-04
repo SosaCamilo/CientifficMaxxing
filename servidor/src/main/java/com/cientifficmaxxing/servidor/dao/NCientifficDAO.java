@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.concurrent.Semaphore;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import static java.lang.Thread.sleep;
 
 public class NCientifficDAO {
 
@@ -125,6 +126,12 @@ public class NCientifficDAO {
             throw new IOException("Operación interrumpida: " + e.getMessage());
         } 
         try{
+            try{
+                sleep(5000);
+            } catch (InterruptedException e){
+                System.err.println("ERROR EN EL SLEEP !!!!!!!!!!!!!!!!!!!!!!!");
+            }
+            
             asegurarNewlineFinal(csvExperimento); 
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvExperimento, true))) {
 
@@ -341,44 +348,54 @@ public class NCientifficDAO {
     }*/
     
     public static List<String[]> listarExperimentos() {
-        List<String[]> lista = new ArrayList<>();
-        lista.add(new String[]{"IdExperimento", "Nombre", "Descripcion", "FechaInicio", 
-                               "FechaFinal", "Estado", "Responsable", "IdResponsable", "Equipo"});
+        try {
+            mutexExperimento.acquire();
+        } catch (InterruptedException e) {
+            // Vi en google que hacer esto es buena practica
+            Thread.currentThread().interrupt(); 
+            //throw new IOException("Operación interrumpida: " + e.getMessage());
+        } try{
+            List<String[]> lista = new ArrayList<>();
+            lista.add(new String[]{"IdExperimento", "Nombre", "Descripcion", "FechaInicio", 
+                                   "FechaFinal", "Estado", "Responsable", "IdResponsable", "Equipo"});
 
-        for (String[] exp : experimento) {
-            // exp: [0]=Id [1]=FechaInicio [2]=FechaFinal [3]=Nombre [4]=Desc [5]=Estado [6]=IdResp
+            for (String[] exp : experimento) {
+                // exp: [0]=Id [1]=FechaInicio [2]=FechaFinal [3]=Nombre [4]=Desc [5]=Estado [6]=IdResp
 
-            // buscar nombre del responsable en cientifico
-            String idResp = exp[6];
-            String nombreResp = "";
-            String[] cien = mapaCientifico.get(idResp);
-            if (cien != null) nombreResp = cien[1] + " " + cien[2]; // Nombre + Apellido
+                // buscar nombre del responsable en cientifico
+                String idResp = exp[6];
+                String nombreResp = "";
+                String[] cien = mapaCientifico.get(idResp);
+                if (cien != null) nombreResp = cien[1] + " " + cien[2]; // Nombre + Apellido
 
-            // buscar equipo en realiza
-            StringBuilder equipo = new StringBuilder();
-            for (String[] r : realiza) {
-                if (r[1].equals(exp[0])) { // r[1]=IdExperimento
-                    String[] c = mapaCientifico.get(r[0]); // r[0]=IdCientifico
-                    if (c != null) {
-                        if (equipo.length() > 0) equipo.append(", ");
-                        equipo.append(c[1]).append(" ").append(c[2]);
+                // buscar equipo en realiza
+                StringBuilder equipo = new StringBuilder();
+                for (String[] r : realiza) {
+                    if (r[1].equals(exp[0])) { // r[1]=IdExperimento
+                        String[] c = mapaCientifico.get(r[0]); // r[0]=IdCientifico
+                        if (c != null) {
+                            if (equipo.length() > 0) equipo.append(", ");
+                            equipo.append(c[1]).append(" ").append(c[2]);
+                        }
                     }
                 }
-            }
 
-            lista.add(new String[]{
-                exp[0],          // IdExperimento
-                exp[3],          // Nombre
-                exp[4],          // Descripcion
-                exp[1],          // FechaInicio
-                exp[2],          // FechaFinal
-                exp[5],          // Estado
-                nombreResp,      // Responsable (texto)
-                idResp,          // IdResponsable
-                equipo.toString() // Equipo
-            });
+                lista.add(new String[]{
+                    exp[0],          // IdExperimento
+                    exp[3],          // Nombre
+                    exp[4],          // Descripcion
+                    exp[1],          // FechaInicio
+                    exp[2],          // FechaFinal
+                    exp[5],          // Estado
+                    nombreResp,      // Responsable (texto)
+                    idResp,          // IdResponsable
+                    equipo.toString() // Equipo
+                });
+            }
+            return lista; } 
+        finally {
+            mutexExperimento.release();
         }
-        return lista;
     }
     
     public List<String[]> listarCientificos (){
