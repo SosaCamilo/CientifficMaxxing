@@ -246,7 +246,8 @@ public class ManejadorPeticiones {
         // LISTAR_RESULTADOS|idExperimento
         if (p.length < 2) return faltanParametros(p[0], "idExperimento");
         int id = parsearId(p[1]);
-        if (id < 0) return idInvalido(p[1]);
+        if (id < 0) 
+            return idInvalido(p[1]);
 
         return Protocolo.datos(ndao.listarResultadosPorExperimento(id));
     }

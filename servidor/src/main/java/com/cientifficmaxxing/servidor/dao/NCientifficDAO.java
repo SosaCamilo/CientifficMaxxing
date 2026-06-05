@@ -398,11 +398,12 @@ public class NCientifficDAO {
         }
     }
     
-    public List<String[]> listarCientificos (){
-        return cientifico;
-    }
     
-    public List<String[]> listarResultadosPorExperimento(int id){
+    /*public List<String[]> listarCientificos (){
+        return cientifico;
+    }*/
+    
+    /*public List<String[]> listarResultadosPorExperimento(int id){
         
         List<String[]> resultadoExp   = new ArrayList<>();
         for (String[] fila : resultado){
@@ -411,6 +412,85 @@ public class NCientifficDAO {
             }
         }
         return resultadoExp;
+    } */
+    
+    public static List<String[]> listarResultadosPorExperimento(int id) {
+        try {
+            mutexResultado.acquire();
+        } catch (InterruptedException e) {
+            // Vi en google que hacer esto es buena practica
+            Thread.currentThread().interrupt(); 
+            //throw new IOException("Operación interrumpida: " + e.getMessage());
+        } try{
+            List<String[]> lista = new ArrayList<>();
+            lista.add(new String[]{"IdResultado", "Fecha", "Descripcion", "Prueba", 
+                                   "TipoDePrueba", "Experimento"});
+
+            for (String[] res : resultado) {
+                
+                // resultado :[0]=IdResultado [1]=Fecha [2]=Descripcion [3]=Prueba [4]=IdExperimento [5]=IdPrueba
+                
+                
+                // Joins Hechos: resultadoExp : [0]=IdResultado [1]=Fecha [2]=Descripcion [3]=Prueba [4]=TipoDePrueba [5]=Experimento (nombre del experimento)
+                 
+                
+                // Solo avanza si es del experimento con id = la variable id
+                
+                if (Integer.parseInt(res[4]) == id && res[4].equals(String.valueOf(id))){
+                    
+                    // buscar nombre del responsable en cientifico
+                    String idExp = res[4];
+                    String nombreExp = "";
+
+                    String idPrueba = res[5];
+                    String nombrePrueba = "";
+                    
+                    
+                    String[] aux = mapaExperimento.get(idExp);
+                    if (aux != null) nombreExp = aux[3]; // Si existe el experimento, asigna la variable nombreExp al nombre del mismo
+
+                    aux = mapaPrueba.get(idPrueba);
+                    if (aux != null) nombrePrueba = aux[1]; // Si existe la prueba, asigna la variable nombrePrueba al nombre de la misma
+
+                    
+                    
+
+                    lista.add(new String[]{
+                        res[0],          // IdResultado
+                        res[1],          // Fecha
+                        res[2],          // Descripcion
+                        res[3],          // Prueba
+                        nombrePrueba,          // TipoDePrueba
+                        nombreExp          // Experimento
+                    });
+                }
+            }
+            return lista; } 
+        finally {
+            mutexResultado.release();
+        }
+    }
+    
+    public static List<String[]> listarCientificos() {
+        try {
+            mutexCientifico.acquire();
+        } catch (InterruptedException e) {
+            // Vi en google que hacer esto es buena practica
+            Thread.currentThread().interrupt(); 
+            //throw new IOException("Operación interrumpida: " + e.getMessage());
+        } try{
+            List<String[]> lista = new ArrayList<>();
+            lista.add(new String[]{"IdCientifico", "Nombre", "Apellido", "Nacimiento"});
+
+            for (String[] cien : cientifico) {
+                // cien: [0]=IdCientifico [1]=Nombre [2]=Apellido [3]=Nacimiento 
+
+                lista.add(cien);
+            }
+            return lista; } 
+        finally {
+            mutexCientifico.release();
+        }
     }
 } 
 
