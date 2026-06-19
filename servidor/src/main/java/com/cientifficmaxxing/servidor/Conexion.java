@@ -2,7 +2,7 @@ package com.cientifficmaxxing.servidor;
 
 import com.cientifficmaxxing.servidor.dao.NCientifficDAO;
 //import com.cientifficmaxxing.servidor.db.ConexionDB;
-import com.cientifficmaxxing.servidor.protocolo.ManejadorPeticiones;
+import com.cientifficmaxxing.servidor.protocolo.Peticion;
 import com.cientifficmaxxing.servidor.util.Logs;
 
 import java.io.*;
@@ -31,11 +31,11 @@ import java.sql.SQLException;*/
  *   - Si procesar() lanza RuntimeException (bug / parámetro inválido), ManejadorPeticiones
  *     la captura y devuelve un ERROR de validación.
  */
-public class ManejadorCliente extends Thread {
+public class Conexion extends Thread {
 
     private final Socket socket;
 
-    public ManejadorCliente(Socket socket) {
+    public Conexion(Socket socket) {
         this.socket = socket;
     }
 
@@ -91,7 +91,7 @@ public class ManejadorCliente extends Thread {
      */
     private void procesarMensajes(BufferedReader entrada, PrintWriter salida/*,
                                    NCientifficDAO dao*/, String ip) throws IOException {
-        ManejadorPeticiones handler = new ManejadorPeticiones(/*dao*/);
+        Peticion handler = new Peticion(/*dao*/);
         String linea;
         while ((linea = entrada.readLine()) != null) {
             Logs.info("[" + ip + "] >> " + linea);

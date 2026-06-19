@@ -31,12 +31,12 @@ import java.util.Arrays;
 
  * Esta clase no sabe nada de Sockets: solo transforma String → String.
  */
-public class ManejadorPeticiones {
+public class Peticion {
 
     //private final CientifficDAO dao;
     private final NCientifficDAO ndao;
 
-    public ManejadorPeticiones(/*CientifficDAO dao*/) {
+    public Peticion(/*CientifficDAO dao*/) {
         //this.dao = dao;
         this.ndao = new NCientifficDAO();
     }
@@ -69,7 +69,7 @@ public class ManejadorPeticiones {
 
                 // ── Científicos ───────────────────────────────────────
                 case Protocolo.CMD_LISTAR_CIENTIFICOS     -> listarCientificos();
-                //case Protocolo.CMD_BUSCAR_CIENTIFICO      -> buscarCientifico(p);
+                case Protocolo.CMD_BUSCAR_CIENTIFICO      -> buscarCientifico(p);
                 //case Protocolo.CMD_AGREGAR_CIENTIFICO     -> agregarCientifico(p);
                 //case Protocolo.CMD_ACTUALIZAR_CIENTIFICO  -> actualizarCientifico(p);
                 //case Protocolo.CMD_BORRAR_CIENTIFICO      -> borrarCientifico(p);
@@ -79,7 +79,7 @@ public class ManejadorPeticiones {
                 //case Protocolo.CMD_QUITAR_REALIZA         -> quitarRealiza(p);
 
                 // ── Administrador ─────────────────────────────────────
-                //case Protocolo.CMD_VERIFICAR_ADMIN        -> verificarAdmin(p);
+                case Protocolo.CMD_VERIFICAR_ADMIN        -> verificarAdmin(p);
 
                 default -> Protocolo.error(Protocolo.ERR_COMANDO,
                                "Comando desconocido: " + cmd);
@@ -285,12 +285,12 @@ public class ManejadorPeticiones {
     }
 
     // Hay que hacer !
-    /*private String buscarCientifico(String[] p) throws IOException  {
+    private String buscarCientifico(String[] p) throws IOException  {
         // BUSCAR_CIENTIFICO|filtro  (filtro puede ser ID numérico o nombre/apellido parcial)
         if (p.length < 2) return faltanParametros(p[0], "filtro");
         String filtro = p[1].toLowerCase().trim();
 
-        List<String[]> todos = dao.listarCientificos();
+        List<String[]> todos = ndao.listarCientificos();
         if (todos.isEmpty()) return Protocolo.datos(todos);
 
         List<String[]> resultado = new ArrayList<>();
@@ -306,7 +306,7 @@ public class ManejadorPeticiones {
             }
         }
         return Protocolo.datos(resultado);
-    } */
+    } 
     
     // Hay que hacer !
     /*private String agregarCientifico(String[] p) throws IOException  {
@@ -384,15 +384,31 @@ public class ManejadorPeticiones {
     // ============================================================
     
     // Hay que hacer !
-    /*private String verificarAdmin(String[] p) throws IOException  {
-        // VERIFICAR_ADMIN|contrasenia
-        if (p.length < 2) return faltanParametros(p[0], "contrasenia");
+    private boolean validarContrasenia(String contraseniaIngresada, String contraseniaAlmacenada) {
+        // Si la almacenada es null, no podemos comparar (evita NullPointerException)
+        if (contraseniaAlmacenada == null) {
+            return false;
+        }
+        // Compara ambas contraseñas y devuelve true si son exactamente iguales
+        return contraseniaAlmacenada.equals(contraseniaIngresada);
+    }
 
-        String almacenada = ndao.obtenerContraseniaAdmin();
-        return (almacenada != null && almacenada.equals(p[1]))
-            ? Protocolo.ok()
-            : Protocolo.error(Protocolo.ERR_ADMIN, "Contraseña incorrecta");
-    }*/
+    private String verificarAdmin(String[] p) throws IOException {
+        // VERIFICAR_ADMIN|contrasenia
+        if (p.length < 2) {
+            return faltanParametros(p[0], "contrasenia");
+        }
+
+        String almacenada = NCientifficDAO.obtenerContraseniaAdmin();
+        String ingresada = p[1];
+
+        // Usamos la nueva función booleana para decidir el retorno
+        if (validarContrasenia(ingresada, almacenada)) {
+            return Protocolo.ok();
+        } else {
+            return Protocolo.error(Protocolo.ERR_ADMIN, "Contraseña incorrecta");
+        }
+    }
 
     // ============================================================
     // UTILIDADES PRIVADAS

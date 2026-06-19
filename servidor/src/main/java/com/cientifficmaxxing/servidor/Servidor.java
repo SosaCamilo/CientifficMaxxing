@@ -46,7 +46,7 @@ public class Servidor {
 
                 // Atender al cliente de forma secuencial antes de aceptar el siguiente.
                 
-                new ManejadorCliente(clienteSocket).start();
+                new Conexion(clienteSocket).start();
             }
 
         } catch (IOException e) {
