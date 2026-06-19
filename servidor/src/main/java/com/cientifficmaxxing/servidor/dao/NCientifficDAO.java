@@ -16,6 +16,7 @@ public class NCientifficDAO {
     public static List<String[]> prueba      = new ArrayList<>();
     public static List<String[]> realiza     = new ArrayList<>();
     public static List<String[]> resultado   = new ArrayList<>();
+    public static List<String[]> contrasena   = new ArrayList<>();
 
     // ── Mapas ────────────────────────────────────────────────
     public static Map<String, String[]> mapaExperimento = new HashMap<>();
@@ -30,6 +31,7 @@ public class NCientifficDAO {
     public static String csvPrueba="resources/Prueba.csv";
     public static String csvRealiza="resources/Realiza.csv";
     public static String csvResultado="resources/Resultado.csv";
+    public static String csvContrasena="resources/Contrasena.csv";
     
     // Mutex para cada archivo, en este orden. (Hay que cambiar las veces que se usa mutex.acquire por esto) 
     
@@ -45,6 +47,7 @@ public class NCientifficDAO {
         prueba      = leerCSV("resources/Prueba.csv");
         realiza     = leerCSV("resources/Realiza.csv");
         resultado   = leerCSV("resources/Resultado.csv");
+        contrasena   = leerCSV("resources/Contrasena.csv");
 
         for (String[] fila : experimento) mapaExperimento.put(fila[0], fila);
         for (String[] fila : cientifico)  mapaCientifico.put(fila[0], fila);
@@ -86,6 +89,10 @@ public class NCientifficDAO {
         mostrarLista(resultado);
         System.out.println("Mapa: ");
         mostrarMapa(mapaResultado);
+        
+        System.out.println("6. Contrasena");
+        System.out.println("Lista: ");
+        mostrarLista(contrasena);
         
         System.out.println("");
         System.out.println("----- ");
@@ -491,6 +498,9 @@ public class NCientifficDAO {
         finally {
             mutexCientifico.release();
         }
+    }
+    public static String obtenerContraseniaAdmin(){
+        return contrasena.get(0)[1];
     }
 } 
 
