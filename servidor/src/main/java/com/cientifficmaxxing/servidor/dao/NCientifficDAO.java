@@ -343,7 +343,7 @@ public class NCientifficDAO {
         
         System.out.println(Arrays.toString(tupla));
         
-        if (!tupla[5].equals("En Proceso")) {
+        if (!tupla[5].equalsIgnoreCase("En Proceso")) {
             System.err.println("El experimento no esta en proceso.");
             return -1;
         }

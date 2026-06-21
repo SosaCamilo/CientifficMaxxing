@@ -15,6 +15,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 /**
  * Capa de despacho de comandos del servidor.
@@ -149,6 +152,10 @@ public class Peticion {
         // AGREGAR_EXPERIMENTO|fechaInicio|fechaFinal|nombre|descripcion|estado|idResponsable
         if (p.length < 7)
             return faltanParametros(p[0], "fechaInicio|fechaFinal|nombre|descripcion|estado|idResponsable");
+
+        String errorFormato = validarExperimento(p[1], p[2], p[3], p[4]);
+        if (errorFormato != null) return Protocolo.error(Protocolo.ERR_VALIDACION, errorFormato);
+
         int idResp = parsearId(p[6]);
         if (idResp < 0) return idInvalido(p[6]);
 
@@ -176,6 +183,10 @@ public class Peticion {
         // ACTUALIZAR_EXPERIMENTO|id|fechaInicio|fechaFinal|nombre|descripcion|estado|idResponsable
         if (p.length < 8)
             return faltanParametros(p[0], "id|fechaInicio|fechaFinal|nombre|descripcion|estado|idResponsable");
+
+        String errorFormato = validarExperimento(p[2], p[3], p[4], p[5]);
+        if (errorFormato != null) return Protocolo.error(Protocolo.ERR_VALIDACION, errorFormato);
+
         int id     = parsearId(p[1]);
         int idResp = parsearId(p[7]);
         if (id < 0)     return idInvalido(p[1]);
@@ -256,6 +267,10 @@ public class Peticion {
         // AGREGAR_RESULTADO|fecha|descripcion|prueba|idExperimento|idPrueba
         if (p.length < 6)
             return faltanParametros(p[0], "fecha|descripcion|prueba|idExperimento|idPrueba");
+
+        String errorFormato = validarResultado(p[1], p[2]);
+        if (errorFormato != null) return Protocolo.error(Protocolo.ERR_VALIDACION, errorFormato);
+
         int idExp    = parsearId(p[4]);
         int idPrueba = parsearId(p[5]);
         if (idExp    < 0) return idInvalido(p[4]);
@@ -432,5 +447,85 @@ public class Peticion {
     private static String idInvalido(String valor) {
         return Protocolo.error(Protocolo.ERR_VALIDACION,
             "ID inválido: '" + valor + "'. Debe ser un número entero positivo");
+    }
+
+    // ============================================================
+    // VALIDACIONES DE FORMATO (reemplazan lo que antes validaba MySQL)
+    // ============================================================
+
+    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ISO_LOCAL_DATE; // yyyy-MM-dd
+    private static final int LARGO_MAX_NOMBRE      = 100;
+    private static final int LARGO_MAX_DESCRIPCION = 500;
+
+    /**
+     * Valida que una fecha venga en formato yyyy-MM-dd
+     * y que sea una fecha real.
+     * Devuelve null si es válida, o un mensaje de error si no.
+     */
+    private static String validarFecha(String fecha, String campo) {
+        if (fecha == null || fecha.isBlank()) {
+            return "El campo '" + campo + "' es obligatorio.";
+        }
+        try {
+            LocalDate.parse(fecha.trim(), FORMATO_FECHA);
+        } catch (DateTimeParseException e) {
+            return "Formato de fecha inválido en '" + campo + "': '" + fecha
+                    + "'. Debe ser AAAA-MM-DD (ej: 2026-01-10).";
+        }
+        return null;
+    }
+
+    /**
+     * Valida un campo de texto genérico: no nulo, no vacío y dentro de un largo máximo.
+     * Devuelve null si es válido, o un mensaje de error si no.
+     */
+    private static String validarTexto(String valor, String campo, int largoMax) {
+        if (valor == null || valor.isBlank()) {
+            return "El campo '" + campo + "' es obligatorio.";
+        }
+        if (valor.length() > largoMax) {
+            return "El campo '" + campo + "' supera el largo máximo permitido ("
+                    + largoMax + " caracteres).";
+        }
+        return null;
+    }
+
+    /**
+     * Valida los datos de Registrar/Actualizar Experimento:
+     * fechaInicio, fechaFinal, nombre, descripcion.
+     * (estado e idResponsable son multivaluados/referenciales: no se validan acá)
+     * Devuelve null si todo está bien, o el mensaje del primer problema encontrado.
+     */
+    private static String validarExperimento(String fechaInicio, String fechaFinal,
+                                              String nombre, String descripcion) {
+        String error;
+
+        if ((error = validarFecha(fechaInicio, "fechaInicio")) != null) return error;
+        if ((error = validarFecha(fechaFinal, "fechaFinal")) != null) return error;
+        if ((error = validarTexto(nombre, "nombre", LARGO_MAX_NOMBRE)) != null) return error;
+        if ((error = validarTexto(descripcion, "descripcion", LARGO_MAX_DESCRIPCION)) != null) return error;
+
+        // fechaFinal no puede ser anterior a fechaInicio
+        LocalDate inicio = LocalDate.parse(fechaInicio.trim(), FORMATO_FECHA);
+        LocalDate fin    = LocalDate.parse(fechaFinal.trim(), FORMATO_FECHA);
+        if (fin.isBefore(inicio)) {
+            return "La fechaFinal (" + fechaFinal + ") no puede ser anterior a la fechaInicio (" + fechaInicio + ").";
+        }
+
+        return null;
+    }
+
+    /**
+     * Valida los datos de Agregar Resultado: fecha, descripcion.
+     * (idExperimento e idPrueba no cuentan para esta validación, son referenciales)
+     * Devuelve null si todo está bien, o el mensaje del primer problema encontrado.
+     */
+    private static String validarResultado(String fecha, String descripcion) {
+        String error;
+
+        if ((error = validarFecha(fecha, "fecha")) != null) return error;
+        if ((error = validarTexto(descripcion, "descripcion", LARGO_MAX_DESCRIPCION)) != null) return error;
+
+        return null;
     }
 }
