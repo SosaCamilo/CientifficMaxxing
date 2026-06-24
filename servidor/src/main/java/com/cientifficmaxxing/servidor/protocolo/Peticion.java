@@ -74,7 +74,7 @@ public class Peticion {
                 case Protocolo.CMD_LISTAR_CIENTIFICOS     -> listarCientificos();
                 case Protocolo.CMD_BUSCAR_CIENTIFICO      -> buscarCientifico(p);
                 //case Protocolo.CMD_AGREGAR_CIENTIFICO     -> agregarCientifico(p);
-                //case Protocolo.CMD_ACTUALIZAR_CIENTIFICO  -> actualizarCientifico(p);
+                case Protocolo.CMD_ACTUALIZAR_CIENTIFICO  -> actualizarCientifico(p);
                 //case Protocolo.CMD_BORRAR_CIENTIFICO      -> borrarCientifico(p);
 
                 // ── Relación Realiza ──────────────────────────────────
@@ -333,16 +333,8 @@ public class Peticion {
             ? Protocolo.ok(String.valueOf(nuevoId))
             : Protocolo.error(Protocolo.ERR_BD, "No se pudo agregar el científico");
     }
-
-    private String actualizarCientifico(String[] p) throws IOException  {
-        // ACTUALIZAR_CIENTIFICO|id|nombre|apellido|nacimiento
-        if (p.length < 5) return faltanParametros(p[0], "id|nombre|apellido|nacimiento");
-        int id = parsearId(p[1]);
-        if (id < 0) return idInvalido(p[1]);
-
-        dao.actualizarCientifico(id, p[2], p[3], p[4]);
-        return Protocolo.ok();
-    } */
+    */
+    
 
         
     // Hay que hacer !
@@ -455,6 +447,7 @@ public class Peticion {
 
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ISO_LOCAL_DATE; // yyyy-MM-dd
     private static final int LARGO_MAX_NOMBRE      = 100;
+    private static final int LARGO_MAX_APELLIDO      = 100;
     private static final int LARGO_MAX_DESCRIPCION = 500;
 
     /**
@@ -514,6 +507,25 @@ public class Peticion {
 
         return null;
     }
+    
+    /**
+     * Valida los datos de Registrar/Actualizar Experimento:
+     * fechaInicio, fechaFinal, nombre, descripcion.
+     * (estado e idResponsable son multivaluados/referenciales: no se validan acá)
+     * Devuelve null si todo está bien, o el mensaje del primer problema encontrado.
+     */
+    private static String validarCientifico(String nombre,
+                                              String apellido, String nacimiento) {
+        String error;
+
+        if ((error = validarFecha(nacimiento, "nacimiento")) != null) return error;
+        if ((error = validarTexto(nombre, "nombre", LARGO_MAX_NOMBRE)) != null) return error;
+        if ((error = validarTexto(apellido, "apellido", LARGO_MAX_APELLIDO)) != null) return error;
+
+        
+
+        return null;
+    }
 
     /**
      * Valida los datos de Agregar Resultado: fecha, descripcion.
@@ -528,4 +540,38 @@ public class Peticion {
 
         return null;
     }
+    
+    
+    
+    private String actualizarCientifico(String[] p) throws IOException {
+        // ACTUALIZAR_CIENTIFICO|id|nombre|apellido|nacimiento
+        if (p.length < 5)
+            return faltanParametros(p[0], "id|nombre|apellido|nacimiento");
+
+        
+        
+        String errorFormato = validarCientifico(p[2], p[3], p[4]);
+        if (errorFormato != null) return Protocolo.error(Protocolo.ERR_VALIDACION, errorFormato);
+
+        int id = parsearId(p[1]);
+        if (id < 0) return idInvalido(p[1]);
+
+        try{
+            ndao.actualizarCientifico(id, p[2], p[3], p[4]);
+        } catch (IOException e){
+            Logs.error("Error al actualizar cientifico " + id + " en CSV: " + e.getMessage(), e);
+            
+        }
+        return Protocolo.ok();
+    }
+    /*
+    private String actualizarCientifico(String[] p) throws IOException  {
+        // ACTUALIZAR_CIENTIFICO|id|nombre|apellido|nacimiento
+        if (p.length < 5) return faltanParametros(p[0], "id|nombre|apellido|nacimiento");
+        int id = parsearId(p[1]);
+        if (id < 0) return idInvalido(p[1]);
+
+        dao.actualizarCientifico(id, p[2], p[3], p[4]);
+        return Protocolo.ok();
+    } */
 }

@@ -251,15 +251,15 @@ public class NCientifficDAO {
             for (int i=0; i< experimento.size(); i++){
                 if (experimento.get(i)[0].equals(String.valueOf(id))){
                     experimento.set(i, ntupla);
+                    
+                    // Sobreescribir par en mapa
+                    mapaExperimento.put(String.valueOf(id), ntupla);
+                    
+                    // Reescribir un CSV con los valores del ArrayList (Hay que reescribirlo entero para que no queden lineas vacias sueltas)
+                    csvUpdater(csvExperimento, experimento);
                     break;
                 }
             }
-            
-            // Sobreescribir par en mapa
-            mapaExperimento.put(String.valueOf(id), ntupla);
-            
-            // Reescribir un CSV con los valores del ArrayList (Hay que reescribirlo entero para que no queden lineas vacias sueltas)
-            csvUpdater(csvExperimento, experimento);
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -502,6 +502,48 @@ public class NCientifficDAO {
     public static String obtenerContraseniaAdmin(){
         return contrasena.get(0)[1];
     }
+    
+    public void actualizarCientifico(int id, String nombre, String apellido, String nacimiento)
+            throws IOException {
+        
+        try{
+            mutexCientifico.acquire();
+            
+            //Reemplazar tupla en arraylist
+            String[] ntupla= { String.valueOf(id), nombre, apellido, nacimiento};
+            for (int i=0; i< cientifico.size(); i++){
+                if (cientifico.get(i)[0].equals(String.valueOf(id))){
+                    cientifico.set(i, ntupla);
+                    
+                    // Sobreescribir par en mapa
+                    mapaCientifico.put(String.valueOf(id), ntupla);
+                    
+                    // Reescribir un CSV con los valores del ArrayList (Hay que reescribirlo entero para que no queden lineas vacias sueltas)
+                    csvUpdater(csvCientifico, cientifico);
+                    break;
+                }
+            }} catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Operación interrumpida: " + e.getMessage());
+        }finally{
+                mutexCientifico.release();
+        }
+    }
+    /*
+    public void actualizarCientifico(int id, String nombre, String apellido, String nacimiento)
+            throws SQLException {
+        try (CallableStatement cs = conexion.prepareCall("{CALL SP_ActualizarCientifico(?,?,?,?)}")) {
+            cs.setInt(1, id);
+            cs.setString(2, nombre);
+            cs.setString(3, apellido);
+            cs.setDate(4, parseFecha(nacimiento));
+            cs.execute();
+        } catch (SQLTransactionRollbackException e) {
+            Logs.error("Error SQL —actualizar científico: " + e.getMessage());
+            throw e;
+        }
+    }
+    */
 } 
 
 
