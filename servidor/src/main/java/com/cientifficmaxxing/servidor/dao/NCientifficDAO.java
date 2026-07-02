@@ -123,7 +123,7 @@ public class NCientifficDAO {
     }
     
     
-    public int agregarExperimento(String fechaInicio, String fechaFinal, String nombre,
+    public int agregarExperimentoLaboratorio(String fechaInicio, String fechaFinal, String nombre,
                                String descripcion, String estado, int idResponsable) throws IOException {
         try {
             mutexExperimento.acquire();
@@ -240,11 +240,13 @@ public class NCientifficDAO {
         }
     }
     
-    public void actualizarExperimento (int id, String fechaInicio, String fechaFinal, String nombre,
+    public void actualizarExperimentoLaboratorio (int id, String fechaInicio, String fechaFinal, String nombre,
                                        String descripcion, String estado, int idResponsable) throws IOException {
         
         try{
             mutexExperimento.acquire();
+            
+            
             
             //Reemplazar tupla en arraylist
             String[] ntupla= { String.valueOf(id), fechaInicio, fechaFinal, nombre, descripcion, estado, String.valueOf(idResponsable)};
@@ -283,7 +285,7 @@ public class NCientifficDAO {
         }
     }
     
-    public int agregarResultado(String fecha, String descripcion, String prueba,
+    public int agregarResultadoLaboratorio(String fecha, String descripcion, String prueba,
                                  int idExperimento, int idPrueba) throws IOException {
         try {
             mutexResultado.acquire();
@@ -350,11 +352,11 @@ public class NCientifficDAO {
         return 1;
     }
     /*
-    public List<String[]> listarExperimentos (){
+    public List<String[]> listarExperimentosLaboratorio (){
         return experimento;
     }*/
     
-    public static List<String[]> listarExperimentos() {
+    public static List<String[]> listarExperimentosLaboratorio() {
         try {
             mutexExperimento.acquire();
         } catch (InterruptedException e) {
@@ -503,11 +505,15 @@ public class NCientifficDAO {
         return contrasena.get(0)[1];
     }
     
-    public void actualizarCientifico(int id, String nombre, String apellido, String nacimiento)
+    public void actualizarCientificoLaboratorio(int id, String nombre, String apellido, String nacimiento)
             throws IOException {
         
         try{
             mutexCientifico.acquire();
+            
+            // Mutex para testear concurrencia:
+            sleep(5000);
+            
             
             //Reemplazar tupla en arraylist
             String[] ntupla= { String.valueOf(id), nombre, apellido, nacimiento};
@@ -529,8 +535,76 @@ public class NCientifficDAO {
                 mutexCientifico.release();
         }
     }
+    
+    // Version interna: asume que mutexExperimento YA esta tomado por quien la llama
+    private boolean esResponsableSinLock(int id) {
+        String idStr = String.valueOf(id);
+        for (String[] exp : experimento) {
+            if (exp.length > 6 && idStr.equals(exp[6])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Version publica: para llamar de forma aislada
+    public boolean esResponsable(int id) {
+        try {
+            mutexExperimento.acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return false;
+        }
+        try {
+            return esResponsableSinLock(id);
+        } finally {
+            mutexExperimento.release();
+        }
+    }
+
+    public boolean eliminarCientificoLaboratorio(int id) throws IOException {
+        // Orden global: Experimento -> Cientifico (mismo orden que la declaracion de los semaforos)
+        try {
+            mutexExperimento.acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Operación interrumpida: " + e.getMessage());
+        }
+        try {
+            try {
+                mutexCientifico.acquire();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IOException("Operación interrumpida: " + e.getMessage());
+            }
+            try {
+                if (esResponsableSinLock(id)) {
+                    return false; // No se borra: es responsable de al menos un experimento
+                }
+
+                String idStr = String.valueOf(id);
+
+                for (int i = 0; i < cientifico.size(); i++) {
+                    if (cientifico.get(i)[0].equals(idStr)) {
+                        cientifico.remove(i);
+                        break;
+                    }
+                }
+
+                mapaCientifico.remove(idStr);
+                csvUpdater(csvCientifico, cientifico);
+
+                return true;
+            } finally {
+                mutexCientifico.release();
+            }
+        } finally {
+            mutexExperimento.release();
+        }
+    }
+}
     /*
-    public void actualizarCientifico(int id, String nombre, String apellido, String nacimiento)
+    public void actualizarCientificoLaboratorio(int id, String nombre, String apellido, String nacimiento)
             throws SQLException {
         try (CallableStatement cs = conexion.prepareCall("{CALL SP_ActualizarCientifico(?,?,?,?)}")) {
             cs.setInt(1, id);
@@ -544,6 +618,6 @@ public class NCientifficDAO {
         }
     }
     */
-} 
+
 
 

@@ -75,7 +75,7 @@ public class Peticion {
                 case Protocolo.CMD_BUSCAR_CIENTIFICO      -> buscarCientifico(p);
                 //case Protocolo.CMD_AGREGAR_CIENTIFICO     -> agregarCientifico(p);
                 case Protocolo.CMD_ACTUALIZAR_CIENTIFICO  -> actualizarCientifico(p);
-                //case Protocolo.CMD_BORRAR_CIENTIFICO      -> borrarCientifico(p);
+                case Protocolo.CMD_BORRAR_CIENTIFICO      -> borrarCientifico(p);
 
                 // ── Relación Realiza ──────────────────────────────────
                 case Protocolo.CMD_AGREGAR_REALIZA        -> agregarRealiza(p);
@@ -145,7 +145,7 @@ public class Peticion {
     // ============================================================
 
     private String listarExperimentos() throws IOException {
-        return Protocolo.datos(ndao.listarExperimentos());
+        return Protocolo.datos(ndao.listarExperimentosLaboratorio());
     }
 
     private String agregarExperimento(String[] p) throws IOException {
@@ -159,10 +159,10 @@ public class Peticion {
         int idResp = parsearId(p[6]);
         if (idResp < 0) return idInvalido(p[6]);
 
-        //int nuevoId = dao.agregarExperimento(p[1], p[2], p[3], p[4], p[5], idResp);
+        //int nuevoId = dao.agregarExperimentoLaboratorio(p[1], p[2], p[3], p[4], p[5], idResp);
         int nnuevoId = -1;
         try {
-            nnuevoId = ndao.agregarExperimento(p[1], p[2], p[3], p[4], p[5], idResp);
+            nnuevoId = ndao.agregarExperimentoLaboratorio(p[1], p[2], p[3], p[4], p[5], idResp);
             if (nnuevoId <= 0)
             return Protocolo.error(Protocolo.ERR_BD, "No se pudo agregar el experimento");
         } catch(IOException e){
@@ -193,7 +193,7 @@ public class Peticion {
         if (idResp < 0) return idInvalido(p[7]);
 
         try{
-            ndao.actualizarExperimento(id, p[2], p[3], p[4], p[5], p[6], idResp);
+            ndao.actualizarExperimentoLaboratorio(id, p[2], p[3], p[4], p[5], p[6], idResp);
         } catch (IOException e){
             Logs.error("Error al actualizar experimento " + id + " en CSV: " + e.getMessage(), e);
             
@@ -278,7 +278,7 @@ public class Peticion {
 
         int nnuevoId=-1;
         try {
-            nnuevoId = ndao.agregarResultado(p[1], p[2], p[3], idExp, idPrueba);
+            nnuevoId = ndao.agregarResultadoLaboratorio(p[1], p[2], p[3], idExp, idPrueba);
             if (nnuevoId<0){
                 System.err.println("El experimento no existe o no esta en proceso");
             }
@@ -338,20 +338,20 @@ public class Peticion {
 
         
     // Hay que hacer !
-    /*private String borrarCientifico(String[] p) throws IOException  {
+    private String borrarCientifico(String[] p) throws IOException  {
         // BORRAR_CIENTIFICO|id
         if (p.length < 2) return faltanParametros(p[0], "id");
         int id = parsearId(p[1]);
         if (id < 0) return idInvalido(p[1]);
 
-        if (dao.esResponsable(id)) {
+        
+        if (!ndao.eliminarCientificoLaboratorio(id)){
             return Protocolo.error(Protocolo.ERR_RESTRICCION,
                 "El científico es responsable de uno o más experimentos. " +
                 "Primero cambie el responsable de esos experimentos y luego intente eliminarlo.");
         }
-        dao.borrarCientifico(id);
         return Protocolo.ok();
-    } */
+    } 
 
     // ============================================================
     // RELACIÓN REALIZA
@@ -405,7 +405,11 @@ public class Peticion {
         if (p.length < 2) {
             return faltanParametros(p[0], "contrasenia");
         }
+        
+        String errorFormato = validarFormatoContrasenia(p[1]);
+        if (errorFormato != null) return Protocolo.error(Protocolo.ERR_ADMIN, "Contraseña incorrecta");
 
+        
         String almacenada = NCientifficDAO.obtenerContraseniaAdmin();
         String ingresada = p[1];
 
@@ -479,6 +483,20 @@ public class Peticion {
         if (valor.length() > largoMax) {
             return "El campo '" + campo + "' supera el largo máximo permitido ("
                     + largoMax + " caracteres).";
+        }
+        return null;
+    }
+    
+    private static String validarFormatoContrasenia(String contrasenia){
+        String error;
+        if ((error = validarTexto(contrasenia, "contrasenia", LARGO_MAX_NOMBRE)) != null) return error;
+        if (!contrasenia.matches(".*[0-9]*.")){
+            error="La contrasenia no existe";
+            return error;
+        }
+        if (contrasenia.length() < 8){
+            error="La contrasenia no existe";
+            return error;
         }
         return null;
     }
@@ -557,7 +575,7 @@ public class Peticion {
         if (id < 0) return idInvalido(p[1]);
 
         try{
-            ndao.actualizarCientifico(id, p[2], p[3], p[4]);
+            ndao.actualizarCientificoLaboratorio(id, p[2], p[3], p[4]);
         } catch (IOException e){
             Logs.error("Error al actualizar cientifico " + id + " en CSV: " + e.getMessage(), e);
             
@@ -565,13 +583,13 @@ public class Peticion {
         return Protocolo.ok();
     }
     /*
-    private String actualizarCientifico(String[] p) throws IOException  {
+    private String actualizarCientificoLaboratorio(String[] p) throws IOException  {
         // ACTUALIZAR_CIENTIFICO|id|nombre|apellido|nacimiento
         if (p.length < 5) return faltanParametros(p[0], "id|nombre|apellido|nacimiento");
         int id = parsearId(p[1]);
         if (id < 0) return idInvalido(p[1]);
 
-        dao.actualizarCientifico(id, p[2], p[3], p[4]);
+        dao.actualizarCientificoLaboratorio(id, p[2], p[3], p[4]);
         return Protocolo.ok();
     } */
 }
