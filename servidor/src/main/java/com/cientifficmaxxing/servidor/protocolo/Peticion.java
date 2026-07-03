@@ -63,8 +63,8 @@ public class Peticion {
                 case Protocolo.CMD_LISTAR_EXPERIMENTOS    -> listarExperimentos();
                 case Protocolo.CMD_AGREGAR_EXPERIMENTO    -> agregarExperimento(p);
                 case Protocolo.CMD_ACTUALIZAR_EXPERIMENTO -> actualizarExperimento(p);
-                //case Protocolo.CMD_ACTUALIZAR_ESTADO      -> actualizarEstado(p);
-                //case Protocolo.CMD_BORRAR_EXPERIMENTO     -> borrarExperimento(p);
+                case Protocolo.CMD_ACTUALIZAR_ESTADO      -> actualizarEstado(p);
+                case Protocolo.CMD_BORRAR_EXPERIMENTO     -> borrarExperimento(p);
 
                 // ── Resultados ────────────────────────────────────────
                 case Protocolo.CMD_LISTAR_RESULTADOS      -> listarResultados(p);
@@ -73,13 +73,13 @@ public class Peticion {
                 // ── Científicos ───────────────────────────────────────
                 case Protocolo.CMD_LISTAR_CIENTIFICOS     -> listarCientificos();
                 case Protocolo.CMD_BUSCAR_CIENTIFICO      -> buscarCientifico(p);
-                //case Protocolo.CMD_AGREGAR_CIENTIFICO     -> agregarCientifico(p);
-                //case Protocolo.CMD_ACTUALIZAR_CIENTIFICO  -> actualizarCientifico(p);
-                //case Protocolo.CMD_BORRAR_CIENTIFICO      -> borrarCientifico(p);
+                case Protocolo.CMD_AGREGAR_CIENTIFICO     -> agregarCientifico(p);
+                case Protocolo.CMD_ACTUALIZAR_CIENTIFICO  -> actualizarCientifico(p);
+                case Protocolo.CMD_BORRAR_CIENTIFICO      -> borrarCientifico(p);
 
                 // ── Relación Realiza ──────────────────────────────────
                 case Protocolo.CMD_AGREGAR_REALIZA        -> agregarRealiza(p);
-                //case Protocolo.CMD_QUITAR_REALIZA         -> quitarRealiza(p);
+                case Protocolo.CMD_QUITAR_REALIZA         -> quitarRealiza(p);
 
                 // ── Administrador ─────────────────────────────────────
                 case Protocolo.CMD_VERIFICAR_ADMIN        -> verificarAdmin(p);
@@ -145,7 +145,7 @@ public class Peticion {
     // ============================================================
 
     private String listarExperimentos() throws IOException {
-        return Protocolo.datos(ndao.listarExperimentos());
+        return Protocolo.datos(ndao.listarExperimentosLaboratorio());
     }
 
     private String agregarExperimento(String[] p) throws IOException {
@@ -159,10 +159,10 @@ public class Peticion {
         int idResp = parsearId(p[6]);
         if (idResp < 0) return idInvalido(p[6]);
 
-        //int nuevoId = dao.agregarExperimento(p[1], p[2], p[3], p[4], p[5], idResp);
+        //int nuevoId = dao.agregarExperimentoLaboratorio(p[1], p[2], p[3], p[4], p[5], idResp);
         int nnuevoId = -1;
         try {
-            nnuevoId = ndao.agregarExperimento(p[1], p[2], p[3], p[4], p[5], idResp);
+            nnuevoId = ndao.agregarExperimentoLaboratorio(p[1], p[2], p[3], p[4], p[5], idResp);
             if (nnuevoId <= 0)
             return Protocolo.error(Protocolo.ERR_BD, "No se pudo agregar el experimento");
         } catch(IOException e){
@@ -193,13 +193,26 @@ public class Peticion {
         if (idResp < 0) return idInvalido(p[7]);
 
         try{
-            ndao.actualizarExperimento(id, p[2], p[3], p[4], p[5], p[6], idResp);
+            ndao.actualizarExperimentoLaboratorio(id, p[2], p[3], p[4], p[5], p[6], idResp);
         } catch (IOException e){
             Logs.error("Error al actualizar experimento " + id + " en CSV: " + e.getMessage(), e);
             
         }
         agregarResponsableAlEquipo(idResp, id);
         return Protocolo.ok();
+    }
+    
+    private String agregarCientifico(String[] p) throws IOException  {
+        // AGREGAR_CIENTIFICO|nombre|apellido|nacimiento
+        if (p.length < 4) return faltanParametros(p[0], "nombre|apellido|nacimiento");
+
+        String errorFormato = validarCientifico(p[1], p[2], p[3]);
+        if (errorFormato != null) return Protocolo.error(Protocolo.ERR_VALIDACION, errorFormato);
+
+        int nuevoId = ndao.agregarCientificoLaboratorio(p[1], p[2], p[3]);
+        return nuevoId > 0
+            ? Protocolo.ok(String.valueOf(nuevoId))
+            : Protocolo.error(Protocolo.ERR_BD, "No se pudo agregar el científico");
     }
 
     /** Agrega el responsable al equipo del experimento si todavía no está. Ignora duplicados. */
@@ -227,26 +240,26 @@ public class Peticion {
     }
 
     //Hay que agregar esto !!!
-    /*private String actualizarEstado(String[] p) throws IOException {
+    private String actualizarEstado(String[] p) throws IOException {
         // ACTUALIZAR_ESTADO|id|nuevoEstado
         if (p.length < 3) return faltanParametros(p[0], "id|estado");
         int id = parsearId(p[1]);
         if (id < 0) return idInvalido(p[1]);
 
-        ndao.actualizarEstadoExperimento(id, p[2]);
+        ndao.actualizarEstadoExperimento(p[1], p[2]);
         return Protocolo.ok();
-    } */
+    } 
 
     // Hay que agregar esto !
-    /*private String borrarExperimento(String[] p) throws IOException {
+    private String borrarExperimento(String[] p) throws IOException {
         // BORRAR_EXPERIMENTO|id
         if (p.length < 2) return faltanParametros(p[0], "id");
         int id = parsearId(p[1]);
         if (id < 0) return idInvalido(p[1]);
 
-        dao.borrarExperimento(id);
+        ndao.eliminarExperimentoLaboratorio(id);
         return Protocolo.ok();
-    }*/
+    }
 
     // ============================================================
     // RESULTADOS
@@ -278,7 +291,7 @@ public class Peticion {
 
         int nnuevoId=-1;
         try {
-            nnuevoId = ndao.agregarResultado(p[1], p[2], p[3], idExp, idPrueba);
+            nnuevoId = ndao.agregarResultadoLaboratorio(p[1], p[2], p[3], idExp, idPrueba);
             if (nnuevoId<0){
                 System.err.println("El experimento no existe o no esta en proceso");
             }
@@ -322,44 +335,22 @@ public class Peticion {
         }
         return Protocolo.datos(resultado);
     } 
-    
-    // Hay que hacer !
-    /*private String agregarCientifico(String[] p) throws IOException  {
-        // AGREGAR_CIENTIFICO|nombre|apellido|nacimiento
-        if (p.length < 4) return faltanParametros(p[0], "nombre|apellido|nacimiento");
-
-        int nuevoId = dao.agregarCientifico(p[1], p[2], p[3]);
-        return nuevoId > 0
-            ? Protocolo.ok(String.valueOf(nuevoId))
-            : Protocolo.error(Protocolo.ERR_BD, "No se pudo agregar el científico");
-    }
-
-    private String actualizarCientifico(String[] p) throws IOException  {
-        // ACTUALIZAR_CIENTIFICO|id|nombre|apellido|nacimiento
-        if (p.length < 5) return faltanParametros(p[0], "id|nombre|apellido|nacimiento");
-        int id = parsearId(p[1]);
-        if (id < 0) return idInvalido(p[1]);
-
-        dao.actualizarCientifico(id, p[2], p[3], p[4]);
-        return Protocolo.ok();
-    } */
-
         
-    // Hay que hacer !
-    /*private String borrarCientifico(String[] p) throws IOException  {
+
+    private String borrarCientifico(String[] p) throws IOException  {
         // BORRAR_CIENTIFICO|id
         if (p.length < 2) return faltanParametros(p[0], "id");
         int id = parsearId(p[1]);
         if (id < 0) return idInvalido(p[1]);
 
-        if (dao.esResponsable(id)) {
+        
+        if (!ndao.eliminarCientificoLaboratorio(id)){
             return Protocolo.error(Protocolo.ERR_RESTRICCION,
                 "El científico es responsable de uno o más experimentos. " +
                 "Primero cambie el responsable de esos experimentos y luego intente eliminarlo.");
         }
-        dao.borrarCientifico(id);
         return Protocolo.ok();
-    } */
+    } 
 
     // ============================================================
     // RELACIÓN REALIZA
@@ -378,7 +369,7 @@ public class Peticion {
     }
 
     // Hay que hacer !
-    /*private String quitarRealiza(String[] p) throws IOException  {
+    private String quitarRealiza(String[] p) throws IOException  {
         // QUITAR_REALIZA|idCientifico|idExperimento
         if (p.length < 3) return faltanParametros(p[0], "idCientifico|idExperimento");
         int idC = parsearId(p[1]);
@@ -392,7 +383,7 @@ public class Peticion {
                 "El científico no forma parte del equipo de este experimento.");
         }
         return Protocolo.ok();
-    }*/
+    }
 
     // ============================================================
     // ADMINISTRADOR
@@ -413,7 +404,11 @@ public class Peticion {
         if (p.length < 2) {
             return faltanParametros(p[0], "contrasenia");
         }
+        
+        String errorFormato = validarFormatoContrasenia(p[1]);
+        if (errorFormato != null) return Protocolo.error(Protocolo.ERR_ADMIN, "Contraseña incorrecta");
 
+        
         String almacenada = NCientifficDAO.obtenerContraseniaAdmin();
         String ingresada = p[1];
 
@@ -455,6 +450,7 @@ public class Peticion {
 
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ISO_LOCAL_DATE; // yyyy-MM-dd
     private static final int LARGO_MAX_NOMBRE      = 100;
+    private static final int LARGO_MAX_APELLIDO      = 100;
     private static final int LARGO_MAX_DESCRIPCION = 500;
 
     /**
@@ -489,6 +485,20 @@ public class Peticion {
         }
         return null;
     }
+    
+    private static String validarFormatoContrasenia(String contrasenia){
+        String error;
+        if ((error = validarTexto(contrasenia, "contrasenia", LARGO_MAX_NOMBRE)) != null) return error;
+        if (!contrasenia.matches(".*[0-9]*.")){
+            error="La contrasenia no existe";
+            return error;
+        }
+        if (contrasenia.length() < 8){
+            error="La contrasenia no existe";
+            return error;
+        }
+        return null;
+    }
 
     /**
      * Valida los datos de Registrar/Actualizar Experimento:
@@ -514,6 +524,25 @@ public class Peticion {
 
         return null;
     }
+    
+    /**
+     * Valida los datos de Registrar/Actualizar Experimento:
+     * fechaInicio, fechaFinal, nombre, descripcion.
+     * (estado e idResponsable son multivaluados/referenciales: no se validan acá)
+     * Devuelve null si todo está bien, o el mensaje del primer problema encontrado.
+     */
+    private static String validarCientifico(String nombre,
+                                              String apellido, String nacimiento) {
+        String error;
+
+        if ((error = validarFecha(nacimiento, "nacimiento")) != null) return error;
+        if ((error = validarTexto(nombre, "nombre", LARGO_MAX_NOMBRE)) != null) return error;
+        if ((error = validarTexto(apellido, "apellido", LARGO_MAX_APELLIDO)) != null) return error;
+
+        
+
+        return null;
+    }
 
     /**
      * Valida los datos de Agregar Resultado: fecha, descripcion.
@@ -528,4 +557,38 @@ public class Peticion {
 
         return null;
     }
+    
+    
+    
+    private String actualizarCientifico(String[] p) throws IOException {
+        // ACTUALIZAR_CIENTIFICO|id|nombre|apellido|nacimiento
+        if (p.length < 5)
+            return faltanParametros(p[0], "id|nombre|apellido|nacimiento");
+
+        
+        
+        String errorFormato = validarCientifico(p[2], p[3], p[4]);
+        if (errorFormato != null) return Protocolo.error(Protocolo.ERR_VALIDACION, errorFormato);
+
+        int id = parsearId(p[1]);
+        if (id < 0) return idInvalido(p[1]);
+
+        try{
+            ndao.actualizarCientificoLaboratorio(id, p[2], p[3], p[4]);
+        } catch (IOException e){
+            Logs.error("Error al actualizar cientifico " + id + " en CSV: " + e.getMessage(), e);
+            
+        }
+        return Protocolo.ok();
+    }
+    /*
+    private String actualizarCientificoLaboratorio(String[] p) throws IOException  {
+        // ACTUALIZAR_CIENTIFICO|id|nombre|apellido|nacimiento
+        if (p.length < 5) return faltanParametros(p[0], "id|nombre|apellido|nacimiento");
+        int id = parsearId(p[1]);
+        if (id < 0) return idInvalido(p[1]);
+
+        dao.actualizarCientificoLaboratorio(id, p[2], p[3], p[4]);
+        return Protocolo.ok();
+    } */
 }
