@@ -63,8 +63,8 @@ public class Peticion {
                 case Protocolo.CMD_LISTAR_EXPERIMENTOS    -> listarExperimentos();
                 case Protocolo.CMD_AGREGAR_EXPERIMENTO    -> agregarExperimento(p);
                 case Protocolo.CMD_ACTUALIZAR_EXPERIMENTO -> actualizarExperimento(p);
-                //case Protocolo.CMD_ACTUALIZAR_ESTADO      -> actualizarEstado(p);
-                //case Protocolo.CMD_BORRAR_EXPERIMENTO     -> borrarExperimento(p);
+                case Protocolo.CMD_ACTUALIZAR_ESTADO      -> actualizarEstado(p);
+                case Protocolo.CMD_BORRAR_EXPERIMENTO     -> borrarExperimento(p);
 
                 // ── Resultados ────────────────────────────────────────
                 case Protocolo.CMD_LISTAR_RESULTADOS      -> listarResultados(p);
@@ -73,13 +73,13 @@ public class Peticion {
                 // ── Científicos ───────────────────────────────────────
                 case Protocolo.CMD_LISTAR_CIENTIFICOS     -> listarCientificos();
                 case Protocolo.CMD_BUSCAR_CIENTIFICO      -> buscarCientifico(p);
-                //case Protocolo.CMD_AGREGAR_CIENTIFICO     -> agregarCientifico(p);
+                case Protocolo.CMD_AGREGAR_CIENTIFICO     -> agregarCientifico(p);
                 case Protocolo.CMD_ACTUALIZAR_CIENTIFICO  -> actualizarCientifico(p);
                 case Protocolo.CMD_BORRAR_CIENTIFICO      -> borrarCientifico(p);
 
                 // ── Relación Realiza ──────────────────────────────────
                 case Protocolo.CMD_AGREGAR_REALIZA        -> agregarRealiza(p);
-                //case Protocolo.CMD_QUITAR_REALIZA         -> quitarRealiza(p);
+                case Protocolo.CMD_QUITAR_REALIZA         -> quitarRealiza(p);
 
                 // ── Administrador ─────────────────────────────────────
                 case Protocolo.CMD_VERIFICAR_ADMIN        -> verificarAdmin(p);
@@ -201,6 +201,19 @@ public class Peticion {
         agregarResponsableAlEquipo(idResp, id);
         return Protocolo.ok();
     }
+    
+    private String agregarCientifico(String[] p) throws IOException  {
+        // AGREGAR_CIENTIFICO|nombre|apellido|nacimiento
+        if (p.length < 4) return faltanParametros(p[0], "nombre|apellido|nacimiento");
+
+        String errorFormato = validarCientifico(p[1], p[2], p[3]);
+        if (errorFormato != null) return Protocolo.error(Protocolo.ERR_VALIDACION, errorFormato);
+
+        int nuevoId = ndao.agregarCientificoLaboratorio(p[1], p[2], p[3]);
+        return nuevoId > 0
+            ? Protocolo.ok(String.valueOf(nuevoId))
+            : Protocolo.error(Protocolo.ERR_BD, "No se pudo agregar el científico");
+    }
 
     /** Agrega el responsable al equipo del experimento si todavía no está. Ignora duplicados. */
     private void agregarResponsableAlEquipo(int idResp, int idExperimento) {
@@ -227,26 +240,26 @@ public class Peticion {
     }
 
     //Hay que agregar esto !!!
-    /*private String actualizarEstado(String[] p) throws IOException {
+    private String actualizarEstado(String[] p) throws IOException {
         // ACTUALIZAR_ESTADO|id|nuevoEstado
         if (p.length < 3) return faltanParametros(p[0], "id|estado");
         int id = parsearId(p[1]);
         if (id < 0) return idInvalido(p[1]);
 
-        ndao.actualizarEstadoExperimento(id, p[2]);
+        ndao.actualizarEstadoExperimento(p[1], p[2]);
         return Protocolo.ok();
-    } */
+    } 
 
     // Hay que agregar esto !
-    /*private String borrarExperimento(String[] p) throws IOException {
+    private String borrarExperimento(String[] p) throws IOException {
         // BORRAR_EXPERIMENTO|id
         if (p.length < 2) return faltanParametros(p[0], "id");
         int id = parsearId(p[1]);
         if (id < 0) return idInvalido(p[1]);
 
-        dao.borrarExperimento(id);
+        ndao.eliminarExperimentoLaboratorio(id);
         return Protocolo.ok();
-    }*/
+    }
 
     // ============================================================
     // RESULTADOS
@@ -322,22 +335,8 @@ public class Peticion {
         }
         return Protocolo.datos(resultado);
     } 
-    
-    // Hay que hacer !
-    /*private String agregarCientifico(String[] p) throws IOException  {
-        // AGREGAR_CIENTIFICO|nombre|apellido|nacimiento
-        if (p.length < 4) return faltanParametros(p[0], "nombre|apellido|nacimiento");
-
-        int nuevoId = dao.agregarCientifico(p[1], p[2], p[3]);
-        return nuevoId > 0
-            ? Protocolo.ok(String.valueOf(nuevoId))
-            : Protocolo.error(Protocolo.ERR_BD, "No se pudo agregar el científico");
-    }
-    */
-    
-
         
-    // Hay que hacer !
+
     private String borrarCientifico(String[] p) throws IOException  {
         // BORRAR_CIENTIFICO|id
         if (p.length < 2) return faltanParametros(p[0], "id");
@@ -370,7 +369,7 @@ public class Peticion {
     }
 
     // Hay que hacer !
-    /*private String quitarRealiza(String[] p) throws IOException  {
+    private String quitarRealiza(String[] p) throws IOException  {
         // QUITAR_REALIZA|idCientifico|idExperimento
         if (p.length < 3) return faltanParametros(p[0], "idCientifico|idExperimento");
         int idC = parsearId(p[1]);
@@ -384,7 +383,7 @@ public class Peticion {
                 "El científico no forma parte del equipo de este experimento.");
         }
         return Protocolo.ok();
-    }*/
+    }
 
     // ============================================================
     // ADMINISTRADOR

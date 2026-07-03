@@ -245,9 +245,6 @@ public class NCientifficDAO {
         
         try{
             mutexExperimento.acquire();
-            
-            
-            
             //Reemplazar tupla en arraylist
             String[] ntupla= { String.valueOf(id), fechaInicio, fechaFinal, nombre, descripcion, estado, String.valueOf(idResponsable)};
             for (int i=0; i< experimento.size(); i++){
@@ -286,56 +283,63 @@ public class NCientifficDAO {
     }
     
     public int agregarResultadoLaboratorio(String fecha, String descripcion, String prueba,
-                                 int idExperimento, int idPrueba) throws IOException {
+                             int idExperimento, int idPrueba) throws IOException {
         try {
-            mutexResultado.acquire();
+            mutexExperimento.acquire();
         } catch (InterruptedException e) {
-            // Vi en google que hacer esto es buena practica
-            Thread.currentThread().interrupt(); 
+            Thread.currentThread().interrupt();
             throw new IOException("Operación interrumpida: " + e.getMessage());
-        } 
-        try{
-            // Verifica que se pueda agregar el resultado (logica de negocio, no tiene q ver con concurrencia)
-            if ( verificarEstadoExperimento(String.valueOf(idExperimento)) < 0){
-                return -1;
-            }
-            
-            // Comienza a escribir
-            asegurarNewlineFinal(csvResultado);
-            
-            try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvResultado, true))) {
-
-                int nuevoId = Integer.parseInt(resultado.get(resultado.size() - 1)[0]) + 1;
-
-                String[] res1 = {
-                    String.valueOf(nuevoId),
-                    fecha,
-                    descripcion,
-                    prueba,
-                    String.valueOf(idExperimento),
-                    String.valueOf(idPrueba)
-                };
-
-                resultado.add(res1);
-                mapaResultado.put(String.valueOf(nuevoId), res1);
-
-                String tupla = String.join(",", res1);
-                bw.write(tupla);
-                bw.write("\n");
-                bw.flush();
-                System.out.println("Tupla agregada:");
-                System.out.println(tupla);
-
-
-                return nuevoId; //Devuelve el id (avisa que salio todo bien y pasa un dato util)
-
-            } catch (IOException e) {
-                    throw e;
-            } 
-            
         }
-        finally {
-            mutexResultado.release();
+        try {
+            try {
+                mutexResultado.acquire();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IOException("Operación interrumpida: " + e.getMessage());
+            }
+            try{
+                // Verifica que se pueda agregar el resultado (logica de negocio, no tiene q ver con concurrencia)
+                if ( verificarEstadoExperimento(String.valueOf(idExperimento)) < 0){
+                    return -1;
+                }
+
+                // Comienza a escribir
+                asegurarNewlineFinal(csvResultado);
+
+                try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvResultado, true))) {
+
+                    int nuevoId = Integer.parseInt(resultado.get(resultado.size() - 1)[0]) + 1;
+
+                    String[] res1 = {
+                        String.valueOf(nuevoId),
+                        fecha,
+                        descripcion,
+                        prueba,
+                        String.valueOf(idExperimento),
+                        String.valueOf(idPrueba)
+                    };
+
+                    resultado.add(res1);
+                    mapaResultado.put(String.valueOf(nuevoId), res1);
+
+                    String tupla = String.join(",", res1);
+                    bw.write(tupla);
+                    bw.write("\n");
+                    bw.flush();
+                    System.out.println("Tupla agregada:");
+                    System.out.println(tupla);
+
+                    return nuevoId;
+
+                } catch (IOException e) {
+                    throw e;
+                }
+
+            } finally {
+                mutexResultado.release();
+            }
+        } finally {
+            mutexExperimento.release();
         }
     }
     private int verificarEstadoExperimento(String idExperimento) {
@@ -563,7 +567,6 @@ public class NCientifficDAO {
     }
 
     public boolean eliminarCientificoLaboratorio(int id) throws IOException {
-        // Orden global: Experimento -> Cientifico (mismo orden que la declaracion de los semaforos)
         try {
             mutexExperimento.acquire();
         } catch (InterruptedException e) {
@@ -579,22 +582,42 @@ public class NCientifficDAO {
             }
             try {
                 if (esResponsableSinLock(id)) {
-                    return false; // No se borra: es responsable de al menos un experimento
+                    return false;
                 }
 
-                String idStr = String.valueOf(id);
+                try {
+                    mutexRealiza.acquire();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new IOException("Operación interrumpida: " + e.getMessage());
+                }
+                try {
+                    String idStr = String.valueOf(id);
 
-                for (int i = 0; i < cientifico.size(); i++) {
-                    if (cientifico.get(i)[0].equals(idStr)) {
-                        cientifico.remove(i);
-                        break;
+                    // Borrar científico (id único → cortamos apenas lo encontramos)
+                    for (int i = 0; i < cientifico.size(); i++) {
+                        if (cientifico.get(i)[0].equals(idStr)) {
+                            cientifico.remove(i);
+                            break;
+                        }
                     }
+                    mapaCientifico.remove(idStr);
+                    csvUpdater(csvCientifico, cientifico);
+
+                    // Borrar participaciones en "realiza" (de atrás hacia adelante)
+                    for (int i = realiza.size() - 1; i >= 0; i--) {
+                        String[] fila = realiza.get(i);
+                        if (fila[0].equals(idStr)) {
+                            mapaRealiza.remove(fila[0] + "," + fila[1]);
+                            realiza.remove(i);
+                        }
+                    }
+                    csvUpdater(csvRealiza, realiza);
+
+                    return true;
+                } finally {
+                    mutexRealiza.release();
                 }
-
-                mapaCientifico.remove(idStr);
-                csvUpdater(csvCientifico, cientifico);
-
-                return true;
             } finally {
                 mutexCientifico.release();
             }
@@ -602,22 +625,158 @@ public class NCientifficDAO {
             mutexExperimento.release();
         }
     }
-}
-    /*
-    public void actualizarCientificoLaboratorio(int id, String nombre, String apellido, String nacimiento)
-            throws SQLException {
-        try (CallableStatement cs = conexion.prepareCall("{CALL SP_ActualizarCientifico(?,?,?,?)}")) {
-            cs.setInt(1, id);
-            cs.setString(2, nombre);
-            cs.setString(3, apellido);
-            cs.setDate(4, parseFecha(nacimiento));
-            cs.execute();
-        } catch (SQLTransactionRollbackException e) {
-            Logs.error("Error SQL —actualizar científico: " + e.getMessage());
-            throw e;
+
+    public boolean eliminarExperimentoLaboratorio(int id) throws IOException {
+        try {
+            mutexExperimento.acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Operación interrumpida: " + e.getMessage());
+        }
+        try {
+            try {
+                mutexRealiza.acquire();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IOException("Operación interrumpida: " + e.getMessage());
+            }
+            try {
+                String idStr = String.valueOf(id);
+
+                for (int i = 0; i < experimento.size(); i++) {
+                    if (experimento.get(i)[0].equals(idStr)) {
+                        experimento.remove(i);
+                        break;
+                    }
+                }
+                mapaExperimento.remove(idStr);
+                csvUpdater(csvExperimento, experimento);
+
+                for (int i = realiza.size() - 1; i >= 0; i--) {
+                    String[] fila = realiza.get(i);
+                    if (fila[1].equals(idStr)) {
+                        mapaRealiza.remove(fila[0] + "," + fila[1]);
+                        realiza.remove(i);
+                    }
+                }
+                csvUpdater(csvRealiza, realiza);
+
+                return true;
+            } finally {
+                mutexRealiza.release();
+            }
+        } finally {
+            mutexExperimento.release();
         }
     }
-    */
+    public int quitarRealiza(int idCientifico, int idExperimento) throws IOException {
+        String clave = idCientifico + "," + idExperimento;
+
+        try {
+            mutexRealiza.acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Operación interrumpida: " + e.getMessage());
+        }
+        try {
+            if (!mapaRealiza.containsKey(clave)) {
+                System.out.println("La relación no existe: " + clave);
+                return 0; // avisa que no habia nada que borrar
+            }
+
+            String idCStr = String.valueOf(idCientifico);
+            String idEStr = String.valueOf(idExperimento);
+
+            for (int i = 0; i < realiza.size(); i++) {
+                String[] fila = realiza.get(i);
+                if (fila[0].equals(idCStr) && fila[1].equals(idEStr)) {
+                    realiza.remove(i);
+                    break; // la clave es unica (idCientifico,idExperimento), corto apenas la encuentro
+                }
+            }
+
+            mapaRealiza.remove(clave);
+            csvUpdater(csvRealiza, realiza);
+
+            return 1; // avisa que se borro bien
+        } finally {
+            mutexRealiza.release();
+        }
+    }
+    public void actualizarEstadoExperimento(String idExp, String Estadoaux) throws IOException {
+        try {
+            mutexExperimento.acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); 
+            throw new IOException("Operación interrumpida: " + e.getMessage());
+        } try{
+            
+            for (int i=0; i< experimento.size(); i++){
+                if (experimento.get(i)[0].equals(idExp)){
+                    String[] ntupla=experimento.get(i);
+                    ntupla[5]=Estadoaux;
+                    experimento.set(i, ntupla);
+                    
+                    // Sobreescribir par en mapa
+                    mapaExperimento.put(idExp, ntupla);
+                    
+                    // Reescribir un CSV con los valores del ArrayList (Hay que reescribirlo entero para que no queden lineas vacias sueltas)
+                    csvUpdater(csvExperimento, experimento);
+                    break;
+                }
+            }
+        }finally {
+            mutexExperimento.release();
+        }
+    }
+    public int agregarCientificoLaboratorio(String nombre, String apellido, String nacimiento) throws IOException {
+        try {
+            mutexCientifico.acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); 
+            throw new IOException("Operación interrumpida: " + e.getMessage());
+        } 
+        try{
+            /*try{
+                sleep(5000);
+            } catch (InterruptedException e){
+                System.err.println("ERROR EN EL SLEEP !!!!!!!!!!!!!!!!!!!!!!!");
+            }*/
+
+            asegurarNewlineFinal(csvCientifico); 
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvCientifico, true))) {
+
+                int nuevoId = Integer.parseInt(cientifico.get(cientifico.size() - 1)[0]) + 1;
+
+                String[] cie1 = {
+                    String.valueOf(nuevoId),
+                    nombre,
+                    apellido,
+                    nacimiento
+                };
+
+                cientifico.add(cie1);
+                mapaCientifico.put(String.valueOf(nuevoId), cie1);
 
 
+                //Thread.sleep(10000);
+                String tupla = String.join(",", cie1);
+                bw.write(tupla);
+                bw.write("\n");
+                bw.flush();
+                System.out.println("Tupla agregada:");
+                System.out.println(tupla);
 
+
+                return nuevoId; 
+
+            } catch (IOException e) {
+                    System.err.println("Error al agregar cientifico: " + e.getMessage());
+                    return -1;
+            } 
+        }
+        finally {
+            mutexCientifico.release();
+        }
+    }
+}
