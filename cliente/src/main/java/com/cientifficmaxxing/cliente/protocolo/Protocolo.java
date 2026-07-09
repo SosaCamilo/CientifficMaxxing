@@ -51,6 +51,9 @@ public class Protocolo {
 
     public static final String CMD_VERIFICAR_ADMIN        = "VERIFICAR_ADMIN";
 
+    public static final String CMD_LISTAR_LOGS             = "LISTAR_LOGS";
+    public static final String CMD_LISTAR_LOGS_ANTERIOR    = "LISTAR_LOGS_ANTERIOR";
+
     // ── Tipos de error que el servidor puede devolver ────────────────────────
     public static final String ERR_VALIDACION   = "VALIDACION";   // parámetros inválidos
     public static final String ERR_RESTRICCION  = "RESTRICCION";  // FK RESTRICT violada

@@ -1,6 +1,10 @@
 package com.cientifficmaxxing.servidor.util;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.List;
 import java.util.logging.*;
 
 /**
@@ -63,5 +67,35 @@ public class Logs {
 
     public static void error(String mensaje, Throwable causa) {
         logger.log(Level.SEVERE, mensaje, causa);
+    }
+
+    // Lectura de logs (para exponerlos en la UI del cliente)
+
+    private static final String ARCHIVO_LOG = "servidor.log";
+    /** Tope de líneas devueltas por archivo, para no saturar la respuesta/UI en logs muy largos. */
+    private static final int MAX_LINEAS_DEVUELTAS = 2000;
+
+    /** Devuelve el contenido de servidor.log (el archivo activo). */
+    public static String leerLogActual() {
+        return leerArchivo(ARCHIVO_LOG);
+    }
+
+    /** Devuelve el contenido de servidor.log.1 (el archivo rotado anterior, si existe). */
+    public static String leerLogAnterior() {
+        return leerArchivo(ARCHIVO_LOG + ".1");
+    }
+
+    private static String leerArchivo(String nombre) {
+        File f = new File(nombre);
+        if (!f.exists()) {
+            return "(No hay registro disponible: " + nombre + " no existe todavía)";
+        }
+        try {
+            List<String> lineas = Files.readAllLines(f.toPath(), StandardCharsets.UTF_8);
+            int desde = Math.max(0, lineas.size() - MAX_LINEAS_DEVUELTAS);
+            return String.join("\n", lineas.subList(desde, lineas.size()));
+        } catch (IOException e) {
+            return "(Error al leer " + nombre + ": " + e.getMessage() + ")";
+        }
     }
 }

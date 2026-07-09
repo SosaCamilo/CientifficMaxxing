@@ -5,7 +5,7 @@ import com.cientifficmaxxing.servidor.util.Logs;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import com.cientifficmaxxing.servidor.dao.NCientifficDAO;
+import com.cientifficmaxxing.servidor.dao.LaboratorioDA;
 
 
 /**
@@ -25,7 +25,7 @@ public class Servidor {
         Logs.info("Iniciando en puerto " + PUERTO + "...");
         
         try {
-            NCientifficDAO.cargar();
+            LaboratorioDA.cargar();
             
         } catch (IOException e) {
             System.err.println("Error crítico al cargar datos: " + e.getMessage());

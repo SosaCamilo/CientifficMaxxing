@@ -8,7 +8,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import static java.lang.Thread.sleep;
 
-public class NCientifficDAO {
+public class LaboratorioDA {
 
     // ── Listas ───────────────────────────────────────────────
     public static List<String[]> experimento = new ArrayList<>();
@@ -40,7 +40,7 @@ public class NCientifficDAO {
     public static final Semaphore mutexPrueba = new Semaphore(1);
     public static final Semaphore mutexRealiza = new Semaphore(1);
     public static final Semaphore mutexResultado = new Semaphore(1);
-    // ── Carga inicial ─────────────────────────────────────────
+    // Carga inicial
     public static void cargar() throws IOException {
         experimento = leerCSV("resources/Experimento.csv");
         cientifico  = leerCSV("resources/Cientifico.csv");
