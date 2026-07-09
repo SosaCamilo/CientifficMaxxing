@@ -12,3 +12,13 @@
 [2026-07-08 22:12:07] [INFO   ] === CientifficMaxxing Servidor ===
 [2026-07-08 22:12:07] [INFO   ] Iniciando en puerto 9000...
 [2026-07-08 22:12:07] [SEVERE ] Error fatal en el servidor
+[2026-07-08 22:23:21] [INFO   ] === CientifficMaxxing Servidor ===
+[2026-07-08 22:23:21] [INFO   ] Iniciando en puerto 9000...
+[2026-07-08 22:23:21] [INFO   ] Servidor listo. Esperando clientes...
+[2026-07-08 22:23:24] [INFO   ] Conexión entrante desde: 127.0.0.1
+[2026-07-08 22:23:24] [INFO   ] [127.0.0.1] Cliente conectado
+[2026-07-08 22:24:14] [INFO   ] [127.0.0.1] >> VERIFICAR_ADMIN|admin1234
+[2026-07-08 22:24:14] [INFO   ] [127.0.0.1] << OK
+[2026-07-08 22:24:14] [INFO   ] [127.0.0.1] >> LISTAR_LOGS
+[2026-07-08 22:24:14] [INFO   ] [127.0.0.1] << OK (1536 caracteres de log, no se vuelca al log)
+[2026-07-08 22:24:19] [INFO   ] [127.0.0.1] Cliente desconectado

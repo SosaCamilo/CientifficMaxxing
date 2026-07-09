@@ -80,11 +80,6 @@ public class Logs {
         return leerArchivo(ARCHIVO_LOG);
     }
 
-    /** Devuelve el contenido de servidor.log.1 (el archivo rotado anterior, si existe). */
-    public static String leerLogAnterior() {
-        return leerArchivo(ARCHIVO_LOG + ".1");
-    }
-
     private static String leerArchivo(String nombre) {
         File f = new File(nombre);
         if (!f.exists()) {

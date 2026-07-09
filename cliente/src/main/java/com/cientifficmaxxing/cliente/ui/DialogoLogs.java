@@ -7,15 +7,13 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Visor de los logs del servidor (servidor.log y servidor.log.1).
- * Pide el contenido al servidor vía LISTAR_LOGS / LISTAR_LOGS_ANTERIOR
- * y lo muestra en dos pestañas de solo lectura.
+ * Visor del log del servidor (servidor.log).
+ * Pide el contenido al servidor vía LISTAR_LOGS y lo muestra en un área de solo lectura.
  */
 public class DialogoLogs extends JDialog {
 
     private final ConexionServidor conexion;
-    private final JTextArea taActual    = crearArea();
-    private final JTextArea taAnterior  = crearArea();
+    private final JTextArea taActual = crearArea();
 
     public DialogoLogs(Window owner, ConexionServidor conexion) {
         super(owner, "Logs del Servidor", ModalityType.APPLICATION_MODAL);
@@ -39,11 +37,7 @@ public class DialogoLogs extends JDialog {
         header.add(titulo, BorderLayout.WEST);
         add(header, BorderLayout.NORTH);
 
-        JTabbedPane tabs = new JTabbedPane();
-        tabs.setFont(Estilos.FUENTE_LABEL);
-        tabs.addTab("Actual (servidor.log)", envolver(taActual));
-        tabs.addTab("Anterior (servidor.log.1)", envolver(taAnterior));
-        add(tabs, BorderLayout.CENTER);
+        add(envolver(taActual), BorderLayout.CENTER);
 
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         footer.setBackground(Estilos.FONDO);
@@ -60,7 +54,6 @@ public class DialogoLogs extends JDialog {
 
     private void cargar() {
         cargarEn(taActual, Protocolo.CMD_LISTAR_LOGS);
-        cargarEn(taAnterior, Protocolo.CMD_LISTAR_LOGS_ANTERIOR);
     }
 
     private void cargarEn(JTextArea area, String comando) {

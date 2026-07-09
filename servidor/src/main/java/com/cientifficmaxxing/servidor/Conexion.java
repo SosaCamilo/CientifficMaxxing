@@ -112,6 +112,6 @@ public class Conexion extends Thread {
 
     private boolean esComandoDeLogs(String linea) {
         String cmd = linea.split("\\|", 2)[0];
-        return Protocolo.CMD_LISTAR_LOGS.equals(cmd) || Protocolo.CMD_LISTAR_LOGS_ANTERIOR.equals(cmd);
+        return Protocolo.CMD_LISTAR_LOGS.equals(cmd);
     }
 }

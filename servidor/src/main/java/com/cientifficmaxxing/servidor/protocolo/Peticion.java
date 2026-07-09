@@ -86,7 +86,6 @@ public class Peticion {
 
                 // ── Logs ──────────────────────────────────────────────
                 case Protocolo.CMD_LISTAR_LOGS            -> listarLogs();
-                case Protocolo.CMD_LISTAR_LOGS_ANTERIOR   -> listarLogsAnterior();
 
                 default -> Protocolo.error(Protocolo.ERR_COMANDO,
                                "Comando desconocido: " + cmd);
@@ -432,9 +431,7 @@ public class Peticion {
         return Protocolo.ok(Logs.leerLogActual());
     }
 
-    private String listarLogsAnterior() {
-        return Protocolo.ok(Logs.leerLogAnterior());
-    }
+    
 
     
     // UTILIDADES PRIVADAS
