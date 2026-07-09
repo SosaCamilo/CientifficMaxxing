@@ -1,8 +1,9 @@
 package com.cientifficmaxxing.servidor;
 
-import com.cientifficmaxxing.servidor.dao.NCientifficDAO;
+import com.cientifficmaxxing.servidor.dao.LaboratorioDA;
 //import com.cientifficmaxxing.servidor.db.ConexionDB;
 import com.cientifficmaxxing.servidor.protocolo.Peticion;
+import com.cientifficmaxxing.servidor.protocolo.Protocolo;
 import com.cientifficmaxxing.servidor.util.Logs;
 
 import java.io.*;
@@ -51,7 +52,7 @@ public class Conexion extends Thread {
             BufferedReader entrada = new BufferedReader(
                 new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
             
-            //NCientifficDAO dao = new NCientifficDAO();
+            //NCientifficDAO dao = new LaboratorioDA();
             procesarMensajes(entrada, salida/*, dao*/, ip);
             
             /*
@@ -90,7 +91,7 @@ public class Conexion extends Thread {
      * readLine() devuelve null cuando el cliente cierra la conexión (EOF en el socket).
      */
     private void procesarMensajes(BufferedReader entrada, PrintWriter salida/*,
-                                   NCientifficDAO dao*/, String ip) throws IOException {
+                                   LaboratorioDA dao*/, String ip) throws IOException {
         Peticion handler = new Peticion(/*dao*/);
         String linea;
         while ((linea = entrada.readLine()) != null) {
@@ -98,7 +99,19 @@ public class Conexion extends Thread {
             // procesar() SIEMPRE devuelve una String no nula — nunca lanza excepciones
             String respuesta = handler.procesar(linea);
             salida.println(respuesta);
-            Logs.info("[" + ip + "] << " + respuesta);
+            // La respuesta de LISTAR_LOGS/LISTAR_LOGS_ANTERIOR es el contenido del propio
+            // archivo de log: si se loguea completa, la siguiente lectura la incluye de nuevo
+            // y el archivo crece sin límite en cada consulta. Se resume en vez de volcarla.
+            if (esComandoDeLogs(linea)) {
+                Logs.info("[" + ip + "] << OK (" + respuesta.length() + " caracteres de log, no se vuelca al log)");
+            } else {
+                Logs.info("[" + ip + "] << " + respuesta);
+            }
         }
+    }
+
+    private boolean esComandoDeLogs(String linea) {
+        String cmd = linea.split("\\|", 2)[0];
+        return Protocolo.CMD_LISTAR_LOGS.equals(cmd);
     }
 }

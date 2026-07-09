@@ -1,7 +1,7 @@
 package com.cientifficmaxxing.servidor.protocolo;
 
 //import com.cientifficmaxxing.servidor.dao.CientifficDAO;
-import com.cientifficmaxxing.servidor.dao.NCientifficDAO;
+import com.cientifficmaxxing.servidor.dao.LaboratorioDA;
 import com.cientifficmaxxing.servidor.util.Logs;
 
 //import java.sql.SQLIntegrityConstraintViolationException;
@@ -37,11 +37,11 @@ import java.time.format.DateTimeParseException;
 public class Peticion {
 
     //private final CientifficDAO dao;
-    private final NCientifficDAO ndao;
+    private final LaboratorioDA ndao;
 
     public Peticion(/*CientifficDAO dao*/) {
         //this.dao = dao;
-        this.ndao = new NCientifficDAO();
+        this.ndao = new LaboratorioDA();
     }
 
     /**
@@ -83,6 +83,9 @@ public class Peticion {
 
                 // ── Administrador ─────────────────────────────────────
                 case Protocolo.CMD_VERIFICAR_ADMIN        -> verificarAdmin(p);
+
+                // ── Logs ──────────────────────────────────────────────
+                case Protocolo.CMD_LISTAR_LOGS            -> listarLogs();
 
                 default -> Protocolo.error(Protocolo.ERR_COMANDO,
                                "Comando desconocido: " + cmd);
@@ -239,7 +242,7 @@ public class Peticion {
         }
     }
 
-    //Hay que agregar esto !!!
+    
     private String actualizarEstado(String[] p) throws IOException {
         // ACTUALIZAR_ESTADO|id|nuevoEstado
         if (p.length < 3) return faltanParametros(p[0], "id|estado");
@@ -250,7 +253,7 @@ public class Peticion {
         return Protocolo.ok();
     } 
 
-    // Hay que agregar esto !
+    
     private String borrarExperimento(String[] p) throws IOException {
         // BORRAR_EXPERIMENTO|id
         if (p.length < 2) return faltanParametros(p[0], "id");
@@ -304,15 +307,15 @@ public class Peticion {
             : Protocolo.error(Protocolo.ERR_BD, "No se pudo agregar el resultado");
     }
 
-    // ============================================================
+    
     // CIENTÍFICOS
-    // ============================================================
+    
 
     private String listarCientificos() throws IOException  {
         return Protocolo.datos(ndao.listarCientificos());
     }
 
-    // Hay que hacer !
+    
     private String buscarCientifico(String[] p) throws IOException  {
         // BUSCAR_CIENTIFICO|filtro  (filtro puede ser ID numérico o nombre/apellido parcial)
         if (p.length < 2) return faltanParametros(p[0], "filtro");
@@ -352,9 +355,9 @@ public class Peticion {
         return Protocolo.ok();
     } 
 
-    // ============================================================
+    
     // RELACIÓN REALIZA
-    // ============================================================
+    
 
     private String agregarRealiza(String[] p) throws IOException  {
         // AGREGAR_REALIZA|idCientifico|idExperimento
@@ -385,11 +388,11 @@ public class Peticion {
         return Protocolo.ok();
     }
 
-    // ============================================================
+   
     // ADMINISTRADOR
-    // ============================================================
+   
     
-    // Hay que hacer !
+   
     private boolean validarContrasenia(String contraseniaIngresada, String contraseniaAlmacenada) {
         // Si la almacenada es null, no podemos comparar (evita NullPointerException)
         if (contraseniaAlmacenada == null) {
@@ -409,7 +412,7 @@ public class Peticion {
         if (errorFormato != null) return Protocolo.error(Protocolo.ERR_ADMIN, "Contraseña incorrecta");
 
         
-        String almacenada = NCientifficDAO.obtenerContraseniaAdmin();
+        String almacenada = LaboratorioDA.obtenerContraseniaAdmin();
         String ingresada = p[1];
 
         // Usamos la nueva función booleana para decidir el retorno
@@ -420,9 +423,19 @@ public class Peticion {
         }
     }
 
-    // ============================================================
+ 
+    // LOGS
+
+
+    private String listarLogs() {
+        return Protocolo.ok(Logs.leerLogActual());
+    }
+
+    
+
+    
     // UTILIDADES PRIVADAS
-    // ============================================================
+    
 
     /** Parsea un ID entero positivo. Devuelve -1 si el valor es inválido o ≤ 0. */
     private static int parsearId(String valor) {
@@ -444,9 +457,9 @@ public class Peticion {
             "ID inválido: '" + valor + "'. Debe ser un número entero positivo");
     }
 
-    // ============================================================
+  
     // VALIDACIONES DE FORMATO (reemplazan lo que antes validaba MySQL)
-    // ============================================================
+  
 
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ISO_LOCAL_DATE; // yyyy-MM-dd
     private static final int LARGO_MAX_NOMBRE      = 100;

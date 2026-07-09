@@ -23,6 +23,7 @@ public class VentanaPrincipal extends JFrame {
 
     private JButton btnExperimentos;
     private JButton btnCientificos;
+    private JButton btnLogs;
 
     public VentanaPrincipal(ConexionServidor conexion) {
         this.conexion          = conexion;
@@ -93,12 +94,15 @@ public class VentanaPrincipal extends JFrame {
 
         btnExperimentos = buildNavBtn("Experimentos");
         btnCientificos  = buildNavBtn("Científicos");
+        btnLogs         = buildNavBtn("Logs");
 
         btnExperimentos.addActionListener(e -> mostrarExperimentos());
         btnCientificos.addActionListener(e  -> mostrarCientificos());
+        btnLogs.addActionListener(e         -> abrirLogs());
 
         der.add(btnExperimentos);
         der.add(btnCientificos);
+        der.add(btnLogs);
         navbar.add(der, BorderLayout.EAST);
 
         return navbar;
@@ -167,34 +171,51 @@ public class VentanaPrincipal extends JFrame {
     }
 
     private void mostrarCientificos() {
-        if (!adminVerificado) {
-            JPasswordField pf = new JPasswordField(16);
-            pf.setFont(Estilos.FUENTE_LABEL);
-            Object[] msg = {"Ingresá la contraseña de administrador:", pf};
-            int op = JOptionPane.showConfirmDialog(this, msg,
-                "Acceso Admin", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-            if (op != JOptionPane.OK_OPTION) return;
-
-            String pass = new String(pf.getPassword());
-            try {
-                String resp = conexion.enviar(
-                    Protocolo.construir(Protocolo.CMD_VERIFICAR_ADMIN, pass));
-                if (resp == null || !resp.startsWith(Protocolo.OK)) {
-                    JOptionPane.showMessageDialog(this,
-                        "Contraseña incorrecta. Acceso denegado.",
-                        "Acceso denegado", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                adminVerificado = true;
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this,
-                    "Error de conexión: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-        }
+        if (!verificarAdminSiNecesario()) return;
         panelCientificos.cargar();
         cardLayout.show(contenido, "cientificos");
         marcarActivo(btnCientificos);
+    }
+
+    /**
+     * Abre el visor de logs del servidor. Requiere contraseña de administrador,
+     * ya que servidor.log registra las líneas crudas recibidas por el servidor
+     * (incluida la contraseña enviada en VERIFICAR_ADMIN).
+     */
+    private void abrirLogs() {
+        if (!verificarAdminSiNecesario()) return;
+        DialogoLogs dlg = new DialogoLogs(this, conexion);
+        dlg.setVisible(true);
+    }
+
+    /** Pide y valida la contraseña de administrador una única vez por sesión. */
+    private boolean verificarAdminSiNecesario() {
+        if (adminVerificado) return true;
+
+        JPasswordField pf = new JPasswordField(16);
+        pf.setFont(Estilos.FUENTE_LABEL);
+        Object[] msg = {"Ingresá la contraseña de administrador:", pf};
+        int op = JOptionPane.showConfirmDialog(this, msg,
+            "Acceso Admin", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (op != JOptionPane.OK_OPTION) return false;
+
+        String pass = new String(pf.getPassword());
+        try {
+            String resp = conexion.enviar(
+                Protocolo.construir(Protocolo.CMD_VERIFICAR_ADMIN, pass));
+            if (resp == null || !resp.startsWith(Protocolo.OK)) {
+                JOptionPane.showMessageDialog(this,
+                    "Contraseña incorrecta. Acceso denegado.",
+                    "Acceso denegado", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+            adminVerificado = true;
+            return true;
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                "Error de conexión: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
     }
 
     private void marcarActivo(JButton activo) {
