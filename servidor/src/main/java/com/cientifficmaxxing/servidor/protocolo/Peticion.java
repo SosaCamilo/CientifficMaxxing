@@ -90,9 +90,6 @@ public class Peticion {
                 default -> Protocolo.error(Protocolo.ERR_COMANDO,
                                "Comando desconocido: " + cmd);
             };
-// Falta cachear que el cientifico ya forme parte del equipo
-// Falta cachear que el cientifico pertenece a algo (no se puede borrar)
-// Falta chequear formato de fecha invalido
         } /*catch (SQLTransactionRollbackException e) {
             // Deadlock o lock timeout de MySQL: la transacción fue revertida en el SP
             Logs.error("Error SQL procesando '" + cmd + "': " + e.getMessage());

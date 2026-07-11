@@ -22,8 +22,9 @@ import java.util.List;
  */
 public class Protocolo {
 
-    /** Separador de campos en el protocolo. */
+    /** Separador de campos en el protocolo de mensajes y de CSVs. */
     public static final String SEP = "|";
+    public static final String DELIM_CSV = "\u001F";
 
     // ---- Prefijos de respuesta ---------------------------------
     public static final String OK    = "OK";
@@ -106,7 +107,7 @@ public class Protocolo {
     }
     public static String[] parsearCSV(String linea) {
         if (linea == null || linea.isBlank()) return new String[0];
-        String[] partes = linea.split(",", -1);
+        String[] partes = linea.split(DELIM_CSV, -1);
         return partes;
     }
 
