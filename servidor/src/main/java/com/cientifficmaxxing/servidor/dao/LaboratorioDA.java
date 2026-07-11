@@ -133,11 +133,11 @@ public class LaboratorioDA {
             throw new IOException("Operación interrumpida: " + e.getMessage());
         } 
         try{
-            try{
+            /*try{
                 sleep(5000);
             } catch (InterruptedException e){
                 System.err.println("ERROR EN EL SLEEP !!!!!!!!!!!!!!!!!!!!!!!");
-            }
+            }*/
             
             asegurarNewlineFinal(csvExperimento); 
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvExperimento, true))) {
@@ -159,7 +159,7 @@ public class LaboratorioDA {
                 
                 
                 //Thread.sleep(10000);
-                String tupla = String.join(",", exp1);
+                String tupla = String.join(Protocolo.DELIM_CSV, exp1);
                 bw.write(tupla);
                 bw.write("\n");
                 bw.flush();
@@ -211,7 +211,7 @@ public class LaboratorioDA {
                 };
                 realiza.add(fila);
                 mapaRealiza.put(clave, fila);
-                bw.write(idCientifico + "," + idExperimento);
+                bw.write(idCientifico + Protocolo.DELIM_CSV + idExperimento);
                 bw.write("\n");
                 bw.flush();
                 return 1; // Avisa que se hizo todo bien
@@ -276,7 +276,7 @@ public class LaboratorioDA {
         //Esta funcion se debe llamar UNICAMENTE cuando el mutex esta acquired (no puede pasar a la vez que otra cosa)
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(path, false))) {
             for (String[] fila : array) {
-                bw.write(String.join(",", fila));
+                bw.write(String.join(Protocolo.DELIM_CSV, fila));
                 bw.write("\n");
             }
         }
@@ -322,7 +322,7 @@ public class LaboratorioDA {
                     resultado.add(res1);
                     mapaResultado.put(String.valueOf(nuevoId), res1);
 
-                    String tupla = String.join(",", res1);
+                    String tupla = String.join(Protocolo.DELIM_CSV, res1);
                     bw.write(tupla);
                     bw.write("\n");
                     bw.flush();
@@ -516,7 +516,7 @@ public class LaboratorioDA {
             mutexCientifico.acquire();
             
             // Mutex para testear concurrencia:
-            sleep(5000);
+            //sleep(5000);
             
             
             //Reemplazar tupla en arraylist
@@ -760,7 +760,7 @@ public class LaboratorioDA {
 
 
                 //Thread.sleep(10000);
-                String tupla = String.join(",", cie1);
+                String tupla = String.join(Protocolo.DELIM_CSV, cie1);
                 bw.write(tupla);
                 bw.write("\n");
                 bw.flush();
